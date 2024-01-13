@@ -44,41 +44,32 @@ logging.basicConfig(filename=log_file_path,
                     format="%(asctime)s - %(levelname)s - %(message)s"
                     )
 
-# Add a StreamHandler to display log messages in the console
-console_handler = logging.StreamHandler()
-# Set the desired log level for console output
-console_handler.setLevel(logging.INFO)
-formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
-console_handler.setFormatter(formatter)
-logging.getLogger("").addHandler(console_handler)
+# # Add a StreamHandler to display log messages in the console
+# console_handler = logging.StreamHandler()
+# # Set the desired log level for console output
+# console_handler.setLevel(logging.INFO)
+# formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+# console_handler.setFormatter(formatter)
+# logging.getLogger("").addHandler(console_handler)
 
 # Define the headers for the CSV file
 csv_headers = [
     "Address", "City", "State", "Zip", "County", "Living Square Feet",
-    "Year Built", "Lot (Acres)", "Lot (Square Feet)", "Land Use", "Subdivision",
-    "APN", "Legal Description", "Property Use", "Units Count", "Bedrooms",
-    "Bathrooms", "# of Stories", "Garage Type", "Garage Square Feet",
-    "Air Conditioning Type", "Heating Type", "Fireplace",
-    "Owner 1 First Name", "Owner 1 Last Name", "Owner 2 First Name",
-    "Owner 2 Last Name", "Owner Mailing Address", "Owner Mailing City",
-    "Owner Mailing State", "Owner Mailing Zip", "Ownership Length (Months)",
-    "Owner Type", "Owner Occupied", "Vacant?", "Listing Status",
-    "Listing Price", "Days on Market", "Last Updated", "Listing Agent Full Name",
-    "Listing Agent First Name", "Listing Agent Last Name", "Listing Agent Email",
-    "Listing Agent Phone", "Listing Office Phone", "MLS Type", "Last Sale Date",
-    "Foreclosure Sale Date", "Last Sale Amount", "Estimated Value",
-    "Estimated Equity", "Equity Percent",
-    "Open Mortgage Balance", "Mortgage Interest Rate", "Mortgage Document Date",
-    "Mortgage Loan Type", "Lender Name", "Deed Type", "Position", "Status",
-    "Default Amount", "Opening bid", "Recording Date", "Auction Date",
+    "Year Built", "Lot (Acres)", "Lot (Square Feet)", "Subdivision",
+    "APN", "Property Use", "Units Count", "Bedrooms",
+    "Bathrooms", "# of Stories", "Garage Type",
+    "Air Conditioning Type", "Heating Type", "Fireplace", "Vacant?", "Listing Status",
+    "Opening bid", "Recording Date", "Auction Date",
     "Tax Amount", "Assessment Year", "Assessed Total Value", "Assessed Land Value",
     "Assessed Improvement Value", "Market Value", "Market Land Value",
-    "Market Improvement Value"
+    "Market Improvement Value", "URL"
 ]
 
 try:
     # Initialize continuation token
     continuation_token = None  # pylint: disable=C0103
+    total_records = None  # pylint: disable=C0103
+    processed_records = 0  # pylint: disable=C0103
 
     while True:
         if continuation_token:
@@ -106,6 +97,10 @@ try:
             # Grab the continuation_token from the response
             continuation_token = primary_data.get("continuationToken", "")
 
+            # Calculate the total number of records from the API response
+            if total_records is None:
+                total_records = primary_data.get("searchResultCount", 0)
+
             if primary_data.get("data"):
                 # Initialize a CSV file for writing
                 with open(csv_file_path, "a", encoding="utf-8", newline="") as csvfile:
@@ -122,6 +117,14 @@ try:
                         listing_status = item.get("listingStatus", {})
                         auction_info = item.get("auctionRunInfo", {})
 
+                        # Increment the processed records count
+                        processed_records += 1
+
+                        # Calculate and display progress
+                        progress = (processed_records / total_records) * 100
+                        logging.info("Progress: %.2f%%", progress)
+                        print(f"Progress: % {progress:.2f}")
+
                         data_row["Address"] = property_info.get("address", "")
                         data_row["City"] = property_info.get("city", "")
                         data_row["State"] = property_info.get("state", "")
@@ -135,102 +138,20 @@ try:
                             "lotSize", "")
                         data_row["Bedrooms"] = property_info.get(
                             "bedrooms", "")
-                        data_row["Bathrooms"] = property_info.get("baths", "")
-
+                        data_row["Bathrooms"] = property_info.get(
+                            "fullBathrooms", "")
                         data_row["Property Use"] = property_info.get(
                             "propertyType", "")
-
                         data_row["Vacant?"] = property_info.get(
                             "occupancyStatus", "")
                         data_row["Listing Status"] = listing_status.get(
                             "statusText", "")
-                        data_row["Last Updated"] = property_info.get(
-                            "lastUpdated", "")
-
-                        data_row["Foreclosure Sale Date"] = property_info.get(
-                            "foreclosureSaleDate", "")
-                        #
-                        # Below looks to be coming from a different source
-                        #
-                        # data_row["Listing Price"] = item.get("listingPrice", "")
-                        # data_row["Days on Market"] = item.get("daysOnMarket", "")
-                        # data_row["Land Use"] = property_info.get("landUse", "")
-                        # data_row["Legal Description"] = property_info.get(
-                        #     "legalDescription", "")
-                        # data_row["Owner 1 First Name"] = property_info.get(
-                        #     "owner1FirstName", "")
-                        # data_row["Owner 1 Last Name"] = property_info.get(
-                        #     "owner1LastName", "")
-                        # data_row["Owner 2 First Name"] = property_info.get(
-                        #     "owner2FirstName", "")
-                        # data_row["Owner 2 Last Name"] = property_info.get(
-                        #     "owner2LastName", "")
-                        # data_row["Owner Mailing Address"] = property_info.get(
-                        #     "ownerMailingAddress", "")
-                        # data_row["Owner Mailing City"] = property_info.get(
-                        #     "ownerMailingCity", "")
-                        # data_row["Owner Mailing State"] = property_info.get(
-                        #     "ownerMailingState", "")
-                        # data_row["Owner Mailing Zip"] = property_info.get(
-                        #     "ownerMailingZip", "")
-                        # data_row["Ownership Length (Months)"] = property_info.get(
-                        #     "ownershipLengthMonths", "")
-                        # data_row["Owner Type"] = property_info.get("ownerType", "")
-                        # data_row["Owner Occupied"] = property_info.get(
-                        #     "ownerOccupied", "")
-                        # data_row["Listing Agent Full Name"] = item.get(
-                        #     "listingAgent", {}).get("fullName", "")
-                        # data_row["Listing Agent First Name"] = item.get(
-                        #     "listingAgent", {}).get("firstName", "")
-                        # data_row["Listing Agent Last Name"] = item.get(
-                        #     "listingAgent", {}).get("lastName", "")
-                        # data_row["Listing Agent Email"] = item.get(
-                        #     "listingAgent", {}).get("email", "")
-                        # data_row["Listing Agent Phone"] = item.get(
-                        #     "listingAgent", {}).get("phone", "")
-                        # data_row["Listing Office Phone"] = item.get(
-                        #     "listingOffice", {}).get("phone", "")
-                        # data_row["MLS Type"] = item.get(
-                        #     "listingStatus", {}).get("isTPS", "")
-                        # data_row["Last Sale Date"] = item.get(
-                        #     "lastSale", {}).get("saleDate", "")
-                        # data_row["Last Sale Amount"] = item.get(
-                        #     "lastSale", {}).get("saleAmount", "")
-                        # data_row["Estimated Value"] = item.get(
-                        #     "propertyInfo", {}).get("estimatedValue", "")
-                        # data_row["Estimated Equity"] = item.get(
-                        #     "propertyInfo", {}).get("estimatedEquity", "")
-                        # data_row["Equity Percent"] = item.get(
-                        #     "propertyInfo", {}).get("equityPercent", "")
-                        # data_row["Open Mortgage Balance"] = item.get(
-                        #     "propertyInfo", {}).get("openMortgageBalance", "")
-                        # data_row["Mortgage Interest Rate"] = item.get(
-                        #     "propertyInfo", {}).get("mortgageInterestRate", "")
-                        # data_row["Mortgage Document Date"] = item.get(
-                        #     "propertyInfo", {}).get("mortgageDocumentDate", "")
-                        # data_row["Mortgage Loan Type"] = item.get(
-                        #     "propertyInfo", {}).get("mortgageLoanType", "")
-                        # data_row["Lender Name"] = item.get(
-                        #     "propertyInfo", {}).get("lenderName", "")
-                        # data_row["Deed Type"] = item.get(
-                        #     "propertyInfo", {}).get("deedType", "")
-                        # data_row["Position"] = item.get(
-                        #     "propertyInfo", {}).get("position", "")
-                        # data_row["Garage Square Feet"] = secondary_data.get(
-                        #     "additionalPropertyCharacteristicsModel", {}).get("garageSqFt", "")
-                        #
-                        # End of different source
-                        #
-                        data_row["Status"] = auction_info.get(
-                            "isInAuction", "")
-                        # data_row["Default Amount"] = item.get(
-                        #     "propertyInfo", {}).get("defaultAmount", "")
                         data_row["Opening bid"] = auction_info.get(
                             "startingBid", "")
-                        # data_row["Recording Date"] = item.get(
-                        #     "propertyInfo", {}).get("recordingDate", "")
                         data_row["Auction Date"] = auction_info.get(
                             "endDate", "")
+                        data_row["URL"] = property_info.get(
+                            "websiteUrl", "")
 
                         # Make the secondary API call to retrieve additional data
                         global_property_id = property_info.get(
