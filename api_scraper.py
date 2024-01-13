@@ -12,7 +12,7 @@ SECONDARY_BASE_URL = ("https://www.servicelinkauction.com/api/auctiongatewaysvc/
                       "v1/PropertyReportData")
 
 # Define the base directory
-BASE_DIRECTORY = "backend/_output"
+BASE_DIRECTORY = "_output"
 os.makedirs(BASE_DIRECTORY, exist_ok=True)
 
 # Define the log file path
