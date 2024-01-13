@@ -1,3 +1,9 @@
+# Personal
+_output
+.venv
+*.log
+_references
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
