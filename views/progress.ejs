@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Progress Monitor</title>
+</head>
+
+<body>
+    <h1>Progress Monitor</h1>
+    <div id="status">Status: <span id="statusValue">0%</span></div>
+    <script>
+        // Function to check progress using WebSocket
+        const socket = new WebSocket('ws://localhost:3000'); // Adjust the URL as needed
+
+        socket.addEventListener('message', function (event) {
+            const data = JSON.parse(event.data);
+            const statusValue = document.getElementById('statusValue');
+
+            if (data.progress !== undefined) {
+                // Display progress as a formatted percentage
+                const formattedProgress = `${data.progress.toFixed(2)}%`;
+                statusValue.innerText = formattedProgress;
+            }
+
+            if (statusValue === '100.00%') {
+                // Close socket after use
+                socket.close();
+            }
+        });
+
+        socket.addEventListener('open', function (event) {
+            // Send a message to the server to start the script
+            socket.send(JSON.stringify({ startScript: true }));
+        });
+
+        socket.addEventListener('close', function (event) {
+            console.log('WebSocket connection closed');
+        });
+    </script>
+</body>
+
+</html>

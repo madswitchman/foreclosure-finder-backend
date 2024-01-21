@@ -1,4 +1,4 @@
-"""Module providing webscraping functionality for foreclosures"""
+"""Module providing API scraping functionality for foreclosures"""
 import json
 import csv
 import datetime
@@ -7,6 +7,13 @@ import os
 import requests
 import sys
 import time
+import sys
+
+
+def send_progress(progress):
+    sys.stdout.write(f"{{\"progress\": {progress}}}\n")
+    sys.stdout.flush()
+
 
 # Define the base URLs for the primary and secondary API calls
 PRIMARY_BASE_URL = "https://www.servicelinkauction.com/api/listingsvc/v1/listings"
@@ -142,7 +149,15 @@ try:
 
                         # Calculate and display progress
                         progress = (processed_records / total_records) * 100
-                        logging.info("Progress: %.2f%%", progress)
+                        # logging.info("Progress: %.2f%%", progress)
+                        progress_message = f"Progress: {progress:.2f}%"
+                        # Send progress update as JSON
+                        sys.stdout.write(f"{{\"progress\": {progress}}}\n")
+                        sys.stdout.flush()
+                        logging.info(progress_message)
+
+                        # Send progress update to Node.js server
+                        send_progress(progress)
 
                         data_row["Address"] = property_info.get("address", "")
                         data_row["City"] = property_info.get("city", "")
@@ -232,9 +247,6 @@ try:
                                 "countyTaxAssessmentModel", {}).get("marketLandValue", "")
                             data_row["Market Improvement Value"] = secondary_data.get(
                                 "countyTaxAssessmentModel", {}).get("marketImprovementValue", "")
-
-                            # Update any other fields with additional data from the
-                            # secondary API response
 
                             # Write the data_row to the CSV file
                             writer.writerow(data_row)
