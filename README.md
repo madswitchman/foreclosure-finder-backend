@@ -8,7 +8,6 @@ Future updates will focus on expanding API options and front-end GUI.
 
 ## Table of Contents
 
-- [Introduction](#introduction)
 - [Getting Started](#getting-started)
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
