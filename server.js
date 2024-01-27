@@ -2,10 +2,20 @@ const express = require('express');
 const { spawn } = require('child_process');
 const http = require('http');
 const WebSocket = require('ws');
+const admin = require('firebase-admin');
+const serviceAccount = require('serviceAccountKey.json'); // Replace with your key file
+const firebaseConfig = require('firebaseConfig.json'); // Replace with you firebaseConfig file
+const firebaseFunctionURL = 'FIREBASE_CLOUD_FUNCTION_URL_HERE'; // URL for firebase function
+
+// Initialize Firebase Admin SDK
+admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+    databaseURL: firebaseConfig.databaseURL,
+    storageBucket: firebaseConfig.storageBucket
+});
+
 const app = express();
 const port = 3000;
-const server = http.createServer(app);
-
 
 // Use EJS as the templating engine
 app.set('view engine', 'ejs');
@@ -42,6 +52,19 @@ app.get('/run-script', (req, res) => {
 
     // Render the 'progress.ejs' template
     res.render('progress');
+
+    // Make an HTTP POST request to the Firebase Cloud Function
+
+    axios.post(firebaseFunctionURL, requestData)
+        .then(response => {
+            // Handle the response from the Cloud Function
+            res.status(response.status).json(response.data);
+        })
+        .catch(error => {
+            // Handle errors
+            console.error('Error calling Firebase Cloud Function:', error);
+            res.status(500).json({ error: 'Internal Server Error' });
+        });
 
     // Init WSS for Python script (port 4000)
     const scriptSocket = new WebSocket('ws://localhost:4000', { perMessageDeflate: false });
