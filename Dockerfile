@@ -4,6 +4,11 @@ FROM node:18
 # Set the working directory inside the container
 WORKDIR /app
 
+# Set environment variables
+ENV wsProtocol="wss"
+ENV host="localhost"
+ENV port="8080"
+
 # Copy package.json and package-lock.json to the working directory
 COPY package*.json ./
 
@@ -14,7 +19,7 @@ RUN npm install
 COPY . .
 
 # Expose the port that your app runs on
-EXPOSE 3000
+EXPOSE 8080
 
 # Command to run the application
 CMD ["node", "app/index.js"]
