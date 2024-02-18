@@ -5,7 +5,7 @@ ENV PORT="8080"
 
 
 # Use an official Node.js runtime as the base image
-FROM node:14-slim AS node_base
+FROM node:18-slim AS node_base
 
 # Set the working directory for Node.js application
 WORKDIR /app
@@ -17,7 +17,7 @@ COPY package*.json ./
 RUN npm install
 
 # Switch to a Python base image
-FROM python:3.9-slim AS python_base
+FROM python:3.8.2-slim AS python_base
 
 # Set the working directory for Python application
 WORKDIR /app
