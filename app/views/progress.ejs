@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Progress Monitor</title>
+</head>
+
+<body>
+  <h1>Progress Monitor</h1>
+  <div id="status">Status: <span id="statusValue">0%</span></div>
+  <div id="ws">WS URI: <span id="wsUriValue">`<%= wsProtocol %><%= host %>:<%= port %>`</span></div>
+  <div id="downloadLinkContainer"></div>
+  <script>
+    // Use the dynamically assigned port passed from the server
+    const socket = new WebSocket(`<%= wsProtocol %><%= host %>:<%= port %>`);
+
+    socket.addEventListener('message', function (event) {
+      const data = JSON.parse(event.data);
+      console.log("Received WebSocket message from index.js:", data);
+      const statusValue = document.getElementById('statusValue');
+
+      if (data.progress !== undefined) {
+        // Display progress as a formatted percentage
+        const formattedProgress = `${data.progress.toFixed(2)}%`;
+        statusValue.innerText = formattedProgress;
+      }
+
+      if (statusValue.innerText === '100.00%') {
+        if (data.type === 'fileInfo') {
+          // Create a download link element
+          const downloadLink = document.createElement('a');
+          downloadLink.href = data.fileUrl;
+          downloadLink.download = data.fileName;
+          downloadLink.textContent = 'Click here to download';
+
+          // Append the download link to the container
+          const downloadLinkContainer = document.getElementById('downloadLinkContainer');
+          downloadLinkContainer.appendChild(downloadLink);
+        }
+        // Close socket after use
+        //socket.close();
+      }
+
+
+    });
+
+    socket.addEventListener('open', function (event) {
+      // Send a message to the server to start the script
+      socket.send(JSON.stringify({ startScript: true }));
+    });
+
+    socket.addEventListener('close', function (event) {
+      console.log('WebSocket connection from progress.ejs closed');
+    });
+  </script>
+</body>
+
+</html>

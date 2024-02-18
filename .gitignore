@@ -171,3 +171,6 @@ functions/.eslintrc.js
 .firebase/hosting.cHVibGlj.cache
 firebaseConfig.json
 serviceAccountKey.json
+.prettierrc
+settings.json
+.pylintrc
