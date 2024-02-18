@@ -21,4 +21,4 @@ steps:
       - 'us-central1'
 
 options:
-  logging: none
+  logging: NONE
