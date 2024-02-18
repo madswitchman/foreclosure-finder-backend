@@ -21,4 +21,4 @@ steps:
       - 'us-central1'
 
 options:
-  logging: NONE
+  logging: CLOUD_LOGGING_ONLY
