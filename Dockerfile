@@ -31,10 +31,10 @@ COPY app/scripts/api_request.py /app/scripts/
 COPY app/scripts/requirements.txt /app/scripts/
 
 # Install necessary build tools including GCC
-# RUN apt-get update && apt-get install -y \
-#     build-essential \
-#     gcc \
-#     && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    gcc \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install Python setup tools
 RUN apt-get update && apt-get install -y python-setuptools
