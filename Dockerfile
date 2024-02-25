@@ -7,7 +7,7 @@ WORKDIR /app
 # Set environment variables
 ENV WS_PROTOCOL="wss"
 # ENV HOST="0.0.0.0"
-#  ENV PORT="8080"
+# ENV PORT="8080"
 
 # Copy package.json and package-lock.json to the working directory
 COPY package*.json ./
