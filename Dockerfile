@@ -4,11 +4,6 @@ FROM node:18 AS node_base
 # Set the working directory inside the container
 WORKDIR /app
 
-# Set environment variables
-ENV WS_PROTOCOL="wss"
-# ENV HOST="0.0.0.0"
-# ENV PORT="8080"
-
 # Copy package.json and package-lock.json to the working directory
 COPY package*.json ./
 
@@ -52,7 +47,12 @@ COPY --from=python_base /app/scripts /app/scripts
 COPY . .
 
 # Expose the port that your app runs on
-# EXPOSE 8080
+EXPOSE 8080
+
+# Set environment variables
+ENV WS_PROTOCOL="wss"
+ENV HOST="0.0.0.0"
+ENV PORT="8080"
 
 # Command to run the application
 CMD ["node", "app/index.js"]
