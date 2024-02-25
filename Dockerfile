@@ -33,6 +33,12 @@ COPY app/scripts/requirements.txt /app/scripts/
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Install necessary build tools including GCC
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    gcc \
+    && rm -rf /var/lib/apt/lists/*
+    
 # Combine Node.js and Python environments
 FROM node_base
 
