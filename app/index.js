@@ -1,12 +1,8 @@
-//const functions = require("firebase-functions");
 const WebSocket = require("ws");
 const express = require("express");
 const {spawn} = require("child_process");
-//const admin = require("firebase-admin");
-
-//admin.initializeApp({});
-
 const app = express();
+
 app.set("view engine", "ejs");
 app.set("views", "app/views");
 

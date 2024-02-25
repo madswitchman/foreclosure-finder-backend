@@ -1,5 +1,9 @@
 # Use the official Node.js image as the base image
 FROM node:18 AS node_base
+# Expose the port that your app runs on
+EXPOSE 8080
+EXPOSE 80
+EXPOSE 443
 
 # Set the working directory inside the container
 WORKDIR /app
@@ -49,13 +53,8 @@ COPY --from=python_base /app/scripts /app/scripts
 # Copy the rest of the application files to the working directory
 COPY . .
 
-# Expose the port that your app runs on
-#EXPOSE $PORT
-
 # Set environment variables
 ENV WS_PROTOCOL="wss"
-#ENV HOST=$HOST
-#ENV PORT=$PORT
 
 # Command to run the application
 CMD ["node", "app/index.js"]
