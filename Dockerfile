@@ -16,6 +16,9 @@ RUN npm install
 # Switch to a Python base image
 FROM python:3.8.2-slim AS python_base
 
+# Upgrade pip
+RUN pip install --upgrade pip
+
 # Set the working directory for Python application
 WORKDIR /app/scripts
 
@@ -47,12 +50,12 @@ COPY --from=python_base /app/scripts /app/scripts
 COPY . .
 
 # Expose the port that your app runs on
-EXPOSE 8080
+#EXPOSE $PORT
 
 # Set environment variables
 ENV WS_PROTOCOL="wss"
-ENV HOST="0.0.0.0"
-ENV PORT="8080"
+#ENV HOST=$HOST
+#ENV PORT=$PORT
 
 # Command to run the application
 CMD ["node", "app/index.js"]
