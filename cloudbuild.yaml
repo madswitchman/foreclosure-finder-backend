@@ -1,4 +1,11 @@
 steps:
+  # Install build tools
+  - name: 'gcr.io/cloud-builders/apt'
+    args: ['update']
+
+  - name: 'gcr.io/cloud-builders/apt'
+    args: ['install', '-y', 'build-essential']
+    
   # Build the Docker image
   - name: 'gcr.io/cloud-builders/docker'
     args: ['build', '-t', 'gcr.io/$PROJECT_ID/foreclosurefinderapp', '.']
