@@ -36,6 +36,9 @@ COPY app/scripts/requirements.txt /app/scripts/
 #     gcc \
 #     && rm -rf /var/lib/apt/lists/*
 
+# Install Python setup tools
+RUN apt-get update && apt-get install -y python-setuptools
+
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
