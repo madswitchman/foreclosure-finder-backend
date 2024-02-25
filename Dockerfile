@@ -1,5 +1,5 @@
 # Use the official Node.js image as the base image
-FROM node:18
+FROM node:18 AS node_base
 
 # Set the working directory inside the container
 WORKDIR /app
@@ -16,7 +16,7 @@ COPY package*.json ./
 RUN npm install
 
 # Copy the rest of the application files to the working directory
-COPY . .
+# COPY . .
 
 # Switch to a Python base image
 FROM python:3.8.2-slim AS python_base
@@ -26,16 +26,19 @@ WORKDIR /app/scripts
 
 # Copy the Python script and requirements.txt
 COPY api_request.py ./
-COPY requirements.txt ./
+# COPY requirements.txt ./
 
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Combine Node.js and Python environments
-FROM node:18
+FROM node_base
 
 # Copy the Python script and dependencies from the Python base image
-COPY --from=python_base /app/scripts .
+COPY --from=python_base /app/scripts /app/scripts
+
+# Copy the rest of the application files to the working directory
+COPY . .
 
 # Expose the port that your app runs on
 EXPOSE 8080
