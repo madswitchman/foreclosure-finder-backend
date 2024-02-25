@@ -25,8 +25,9 @@ FROM python:3.8.2-slim AS python_base
 WORKDIR /app/scripts
 
 # Copy the Python script and requirements.txt
-COPY api_request.py ./
+# COPY api_request.py ./
 # COPY requirements.txt ./
+COPY app/scripts/api_request.py /app/scripts/
 
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
