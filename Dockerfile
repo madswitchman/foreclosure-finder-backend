@@ -17,7 +17,7 @@ RUN npm install
 FROM python:3.8.2-slim AS python_base
 
 # Upgrade pip
-RUN pip install --upgrade pip
+# RUN pip install --upgrade pip
 
 # Set the working directory for Python application
 WORKDIR /app/scripts
@@ -35,7 +35,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python setup tools
-RUN apt-get update && apt-get install -y python-setuptools
+# RUN apt-get update && apt-get install -y python-setuptools
 
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
