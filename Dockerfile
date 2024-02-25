@@ -52,7 +52,7 @@ COPY --from=python_base /app/scripts /app/scripts
 COPY . .
 
 # Expose the port that your app runs on
-EXPOSE 8080
+# EXPOSE 8080
 
 # Command to run the application
 CMD ["node", "app/index.js"]
