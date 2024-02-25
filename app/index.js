@@ -13,8 +13,8 @@ app.set("views", "app/views");
 const httpServer = app.listen(() => {
   const wsProtocol = process.env.WS_PROTOCOL || 'ws://';
   const host = process.env.HOST || 'localhost';
-  //const port = httpServer.address().port;
-  const port = process.env.PORT || 8080;
+  const port = httpServer.address().port;
+  //const port = process.env.PORT || 8080;
   console.log(`HTTP Server is listening on port ${port}`);
 
   const fileInfo = {}; // Object to store fileInfo data
