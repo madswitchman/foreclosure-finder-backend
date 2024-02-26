@@ -53,6 +53,7 @@ COPY . .
 
 # Set environment variables
 ENV WS_PROTOCOL="wss://"
+ENV HOST="foreclosure-finder-backend-lv672goida-uc.a.run.app"
 
 # Command to run the application
 CMD ["node", "app/index.js"]
