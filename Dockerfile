@@ -2,8 +2,6 @@
 FROM node:18 AS node_base
 # Expose the port that your app runs on
 EXPOSE 8080
-EXPOSE 80
-EXPOSE 443
 
 # Set the working directory inside the container
 WORKDIR /app
