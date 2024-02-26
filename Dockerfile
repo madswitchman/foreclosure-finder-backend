@@ -52,7 +52,7 @@ COPY --from=python_base /app/scripts /app/scripts
 COPY . .
 
 # Set environment variables
-ENV WS_PROTOCOL="wss"
+ENV WS_PROTOCOL="wss://"
 
 # Command to run the application
 CMD ["node", "app/index.js"]
