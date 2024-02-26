@@ -7,13 +7,14 @@ const admin = require("firebase-admin");
 admin.initializeApp({});
 
 const app = express();
-const port = process.env.PORT || 8080;
+const host = window.location.hostname; // Get the hostname of the current page
+const port = window.location.port; // Get the port of the current page
 app.set("view engine", "ejs");
 app.set("views", "app/views");
 
 const httpServer = app.listen(port, () => {
   const wsProtocol = process.env.WS_PROTOCOL || 'ws://';
-  const host = process.env.HOST || 'localhost';
+  //const host = process.env.HOST || 'localhost';
   //const port = httpServer.address().port;
   //const port = process.env.PORT || 8080;
   console.log(`HTTP Server is listening on ${host}:${port}`);
@@ -34,13 +35,20 @@ const httpServer = app.listen(port, () => {
       }));
     }
 
-    ws.on("message", (message) => {
-      console.log("Received message from client:", message.toString());
-    });
+    // ws.on("message", (message) => {
+    //   console.log("Received message from client:", message.toString());
+    // });
+    ws.onmessage = function(event) {
+      console.log("Received message from client:", event.data);
+      // You can access the received message using event.data
+    };
 
-    ws.on("close", () => {
+    // ws.on("close", () => {
+    //   console.log("WebSocket index.js disconnected");
+    // });
+    ws.onclose = function() {
       console.log("WebSocket index.js disconnected");
-    });
+    };
   });
 
   app.get("/run-script", (req, res) => {
