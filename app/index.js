@@ -7,16 +7,13 @@ const admin = require("firebase-admin");
 admin.initializeApp({});
 
 const app = express();
-const host = window.location.hostname; // Get the hostname of the current page
-const port = window.location.port; // Get the port of the current page
+const host = process.env.HOST || 'localhost';
+const port = process.env.PORT || 8080;
 app.set("view engine", "ejs");
 app.set("views", "app/views");
 
 const httpServer = app.listen(port, () => {
   const wsProtocol = process.env.WS_PROTOCOL || 'ws://';
-  //const host = process.env.HOST || 'localhost';
-  //const port = httpServer.address().port;
-  //const port = process.env.PORT || 8080;
   console.log(`HTTP Server is listening on ${host}:${port}`);
 
   const fileInfo = {}; // Object to store fileInfo data
