@@ -19,6 +19,9 @@ RUN python -m venv /opt/app/venv
 ENV PATH="/opt/app/venv/bin:$PATH"
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Upgrade pip and install wheel
+RUN pip install --upgrade pip wheel
+
 # Second stage: Build Node.js application
 FROM node:18 AS node_build
 
