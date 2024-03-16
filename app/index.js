@@ -51,6 +51,17 @@ const httpServer = app.listen(port, () => {
     };
   });
 
+  app.get('/check-python', (req, res) => {
+    try {
+      // Run Python script to check Python version
+      const pythonVersion = execSync('python --version').toString();
+      res.send(`Python version: ${pythonVersion}`);
+    } catch (error) {
+      // Handle error if Python is not installed or script execution fails
+      res.status(500).send('Error checking Python version');
+    }
+  });
+  
   app.get("/run-script", (req, res) => {
     const requestData = req.query;
     console.log("Request data: ", requestData);
