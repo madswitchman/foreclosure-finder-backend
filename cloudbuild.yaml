@@ -14,7 +14,20 @@ steps:
   - name: 'gcr.io/cloud-builders/docker'
     args: ['push', 'gcr.io/$PROJECT_ID/foreclosurefinderapp']
 
-  # Update Cloud Run service to enable HTTP/2 connections
+  # Deploy to Cloud Run
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - 'foreclosure-finder-backend'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/foreclosurefinderapp'
+      - '--platform'
+      - 'managed'
+      - '--region'
+      - 'us-central1'
+  
+    # Update Cloud Run service to enable HTTP/2 connections
   - name: 'gcr.io/cloud-builders/gcloud'
     args:
       - 'run'
@@ -29,19 +42,6 @@ steps:
       - 'managed'
       - '--set-env-vars'
       - 'GOOGLE_CLOUD_RUN_ENABLE_HTTP2=true'
-
-  # Deploy to Cloud Run
-  - name: 'gcr.io/cloud-builders/gcloud'
-    args:
-      - 'run'
-      - 'deploy'
-      - 'foreclosure-finder-backend'
-      - '--image'
-      - 'gcr.io/$PROJECT_ID/foreclosurefinderapp'
-      - '--platform'
-      - 'managed'
-      - '--region'
-      - 'us-central1'
 
 options:
   logging: CLOUD_LOGGING_ONLY
