@@ -12,15 +12,18 @@ COPY app/scripts/requirements.txt /app/scripts/
 RUN apt-get update && apt-get install -y \
     build-essential \
     gcc \
+    libffi-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies in a virtual environment
 RUN python -m venv /opt/app/venv
 ENV PATH="/opt/app/venv/bin:$PATH"
-RUN pip install --no-cache-dir -r requirements.txt
 
 # Upgrade pip and install wheel
 RUN pip install --upgrade pip wheel
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Second stage: Build Node.js application
 FROM node:18 AS node_build
