@@ -1,4 +1,16 @@
-# First stage: Install Python dependencies in a venv
+# First stage: Install Node.js dependencies
+FROM node:18 AS node_build
+
+# Set the working directory inside the container
+WORKDIR /app
+
+# Copy package.json and package-lock.json to the working directory
+COPY package*.json ./
+
+# Install Node.js dependencies
+RUN npm install
+
+# Second stage: Install Python and dependencies
 FROM python:3.8.2-slim AS python_build
 
 # Set the working directory for Python application
@@ -15,39 +27,17 @@ RUN apt-get update && apt-get install -y \
     libffi-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Python dependencies in a virtual environment
-RUN python -m venv /opt/app/venv
-ENV PATH="/opt/app/venv/bin:$PATH"
-
-# Upgrade pip and install wheel
-RUN pip install --upgrade pip wheel
-
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Second stage: Build Node.js application
-FROM node:18 AS node_build
-
-# Set the working directory inside the container
-WORKDIR /app
-
-# Copy package.json and package-lock.json to the working directory
-COPY package*.json ./
-
-# Install Node.js dependencies
-RUN npm install
-
-# Third stage: Combine Node.js and Python environments
+# Third stage: Final stage
 FROM node_build AS final
 
 # Set the working directory inside the container
 WORKDIR /app
 
 # Copy the Python script and dependencies from the Python build stage
-COPY --from=python_build /opt/app/venv /opt/app/venv
-
-# Copy the rest of the application files to the working directory
-COPY . .
+COPY --from=python_build /app/scripts /app/scripts
 
 # Set environment variables
 ENV WS_PROTOCOL="wss://"
