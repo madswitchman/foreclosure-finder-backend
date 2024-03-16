@@ -36,8 +36,8 @@ FROM node_build AS final
 # Set the working directory inside the container
 WORKDIR /app
 
-# Copy the Python script and dependencies from the Python build stage
-COPY --from=python_build /app/scripts /app/scripts
+# Copy the Node.js application files
+COPY app/ app/
 
 # Set environment variables
 ENV WS_PROTOCOL="wss://"
