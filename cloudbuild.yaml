@@ -28,20 +28,20 @@ steps:
       - 'us-central1'
   
     # Update Cloud Run service to enable HTTP/2 connections
-  - name: 'gcr.io/cloud-builders/gcloud'
-    args:
-      - 'run'
-      - 'services'
-      - 'update'
-      - 'foreclosure-finder-backend'
-      - '--region'
-      - 'us-central1'
-      - '--ingress'
-      - 'internal-and-cloud-load-balancing'
-      - '--platform'
-      - 'managed'
-      - '--set-env-vars'
-      - 'GOOGLE_CLOUD_RUN_ENABLE_HTTP2=true'
+  # - name: 'gcr.io/cloud-builders/gcloud'
+  #   args:
+  #     - 'run'
+  #     - 'services'
+  #     - 'update'
+  #     - 'foreclosure-finder-backend'
+  #     - '--region'
+  #     - 'us-central1'
+  #     - '--ingress'
+  #     - 'internal-and-cloud-load-balancing'
+  #     - '--platform'
+  #     - 'managed'
+  #     - '--set-env-vars'
+  #     - 'GOOGLE_CLOUD_RUN_ENABLE_HTTP2=true'
 
 options:
   logging: CLOUD_LOGGING_ONLY
