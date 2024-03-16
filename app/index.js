@@ -12,6 +12,9 @@ const port = process.env.PORT || 8080;
 app.set("view engine", "ejs");
 app.set("views", "app/views");
 
+// Set the environment variable PYTHONUNBUFFERED to true
+process.env.PYTHONUNBUFFERED = 'true';
+
 const httpServer = app.listen(port, () => {
   const wsProtocol = process.env.WS_PROTOCOL || 'ws://';
   console.log(`HTTP Server is listening on ${host}:${port}`);

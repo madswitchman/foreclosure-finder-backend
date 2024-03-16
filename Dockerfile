@@ -13,9 +13,6 @@ COPY package*.json ./
 # Install dependencies
 RUN npm install
 
-# Copy the rest of the application files to the working directory
-# COPY . .
-
 # Switch to a Python base image
 FROM python:3.8.2-slim AS python_base
 
