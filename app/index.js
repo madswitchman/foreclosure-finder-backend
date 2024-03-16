@@ -67,7 +67,16 @@ const httpServer = app.listen(port, () => {
     console.log("Request data: ", requestData);
     console.log("WS_PROTOCOL: ", wsProtocol);
     console.log("HOST: ", host);
-    const pythonProcess = spawn("python", ["app/scripts/api_request.py", wsProtocol, host, port]);
+    //const pythonProcess = spawn("python", ["app/scripts/api_request.py", wsProtocol, host, port]);
+
+        // Check if running on localhost or cloud
+        if (process.env.WS_PROTOCOL === 'wss://') {
+          // Command to run the packaged Python executable in the cloud
+          pythonProcess = spawn('./scripts/dist/api_request', [wsProtocol, host, port]);
+        } else {
+          // Command to run the Python script directly on localhost
+          pythonProcess = spawn('python', ['./scripts/api_request.py', wsProtocol, host, port]);
+        }
 
     pythonProcess.stdin.write(JSON.stringify(requestData));
     pythonProcess.stdin.end();
