@@ -40,7 +40,7 @@ websocket_server_address = f"{ws_protocol}{host}:{port}"
 
 # Extract params from request_data
 state = request_data.get("state", "")
-sortByEndingSoonest = request_data.get("sortByEndingSoonest", "")
+# sortByEndingSoonest = request_data.get("sortByEndingSoonest", "")
 # limit = request_data.get("limit", 100)  # Default limit value if not provided
 
 
@@ -366,6 +366,6 @@ try:
 except Exception as e:
     print("Failed to connect to WebSocket server:", e)
 
-# finally:
+finally:
     # Close WebSocket connection
-    # ws.close()
+    ws.close()
