@@ -72,6 +72,7 @@ const httpServer = app.listen(port, () => {
         // Check if running on localhost or cloud
         if (process.env.WS_PROTOCOL === 'wss://') {
           // Command to run the packaged Python executable in the cloud
+          console.log("Entered into cloud env python execution");
           pythonProcess = spawn('./scripts/dist/api_request', [wsProtocol, host, port]);
         } else {
           // Command to run the Python script directly on localhost
