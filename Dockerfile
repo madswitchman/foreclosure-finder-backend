@@ -52,6 +52,7 @@ COPY app/ app/
 ENV WS_PROTOCOL="wss://"
 ENV HOST="foreclosure-finder-backend-lv672goida-uc.a.run.app"
 ENV PYTHONUNBUFFERED = 'true';
+ENV PORT = '443';
 
 # Command to run the application
 CMD ["node", "app/index.js"]
