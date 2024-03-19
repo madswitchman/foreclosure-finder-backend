@@ -10,14 +10,14 @@ steps:
         export TYPE=$(gcloud secrets versions access $_TYPE)
         export PROJECT_ID=$(gcloud secrets versions access $_PROJECT_ID)
         export PRIVATE_KEY_ID=$(gcloud secrets versions access $_PRIVATE_KEY_ID)
-        export PRIVATE_KEY=$(gcloud secrets versions access $PRIVATE_KEY)
-        export CLIENT_EMAIL=$(gcloud secrets versions access $CLIENT_EMAIL)
-        export CLIENT_ID=$(gcloud secrets versions access $CLIENT_ID)
-        export AUTH_URI=$(gcloud secrets versions access $AUTH_URI)
+        export PRIVATE_KEY=$(gcloud secrets versions access $_PRIVATE_KEY)
+        export CLIENT_EMAIL=$(gcloud secrets versions access $_CLIENT_EMAIL)
+        export CLIENT_ID=$(gcloud secrets versions access $_CLIENT_ID)
+        export AUTH_URI=$(gcloud secrets versions access $_AUTH_URI)
         export TOKEN_URI=$(gcloud secrets versions access $_TOKEN_URI)
-        export AUTH_PROVIDER_X509_CERT_URL=$(gcloud secrets versions access _AUTH_PROVIDER_X509_CERT_URL)
-        export CLIENT_X509_CERT_URL=$(gcloud secrets versions access _CLIENT_X509_CERT_URL)
-        export UNIVERSE_DOMAIN=$(gcloud secrets versions access _UNIVERSE_DOMAIN)
+        export AUTH_PROVIDER_X509_CERT_URL=$(gcloud secrets versions access $_AUTH_PROVIDER_X509_CERT_URL)
+        export CLIENT_X509_CERT_URL=$(gcloud secrets versions access $_CLIENT_X509_CERT_URL)
+        export UNIVERSE_DOMAIN=$(gcloud secrets versions access $_UNIVERSE_DOMAIN)
 
   # Build and deploy the Docker image to Cloud Run
   - name: 'gcr.io/cloud-builders/docker'
