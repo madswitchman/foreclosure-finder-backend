@@ -1,55 +1,23 @@
 steps:
-  # Fetch the secrets from Secrets Manager
-  - name: 'gcr.io/cloud-builders/gcloud'
-    entrypoint: 'bash'
-    args:
-      - '-c'
-      - |
-        # Fetch secret values
-        export SERVICE_ACCOUNT_KEY=$(gcloud secrets versions access $_SERVICE_ACCOUNT_KEY)
-        export TYPE=$(gcloud secrets versions access $_TYPE)
-        export PROJECT_ID=$(gcloud secrets versions access $_PROJECT_ID)
-        export PRIVATE_KEY_ID=$(gcloud secrets versions access $_PRIVATE_KEY_ID)
-        export PRIVATE_KEY=$(gcloud secrets versions access $_PRIVATE_KEY)
-        export CLIENT_EMAIL=$(gcloud secrets versions access $_CLIENT_EMAIL)
-        export CLIENT_ID=$(gcloud secrets versions access $_CLIENT_ID)
-        export AUTH_URI=$(gcloud secrets versions access $_AUTH_URI)
-        export TOKEN_URI=$(gcloud secrets versions access $_TOKEN_URI)
-        export AUTH_PROVIDER_X509_CERT_URL=$(gcloud secrets versions access $_AUTH_PROVIDER_X509_CERT_URL)
-        export CLIENT_X509_CERT_URL=$(gcloud secrets versions access $_CLIENT_X509_CERT_URL)
-        export UNIVERSE_DOMAIN=$(gcloud secrets versions access $_UNIVERSE_DOMAIN)
-
   # Build and deploy the Docker image to Cloud Run
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - 'build'
       - '-t'
       - 'gcr.io/$PROJECT_ID/foreclosurefinderapp'
-      - '--build-arg'
-      - 'SERVICE_ACCOUNT_KEY=$SERVICE_ACCOUNT_KEY'
-      - '--build-arg'
-      - 'TYPE=$TYPE'
-      - '--build-arg'
-      - 'PROJECT_ID=$PROJECT_ID'
-      - '--build-arg'
-      - 'PRIVATE_KEY_ID=$PRIVATE_KEY_ID'
-      - '--build-arg'
-      - 'PRIVATE_KEY=$PRIVATE_KEY'
-      - '--build-arg'
-      - 'CLIENT_EMAIL=$CLIENT_EMAIL'
-      - '--build-arg'
-      - 'CLIENT_ID=$CLIENT_ID'
-      - '--build-arg'
-      - 'AUTH_URI=$AUTH_URI'
-      - '--build-arg'
-      - 'TOKEN_URI=$TOKEN_URI'
-      - '--build-arg'
-      - 'AUTH_PROVIDER_X509_CERT_URL=$AUTH_PROVIDER_X509_CERT_URL'
-      - '--build-arg'
-      - 'CLIENT_X509_CERT_URL=$CLIENT_X509_CERT_URL'
-      - '--build-arg'
-      - 'UNIVERSE_DOMAIN=$UNIVERSE_DOMAIN'
-      - '.'
+    env:
+      - 'SERVICE_ACCOUNT_KEY={$_SERVICE_ACCOUNT_KEY}'
+      - 'TYPE={$_TYPE}'
+      - 'PROJECT_ID={$_PROJECT_ID}'
+      - 'PRIVATE_KEY_ID={$_PRIVATE_KEY_ID}'
+      - 'PRIVATE_KEY={$_PRIVATE_KEY}'
+      - 'CLIENT_EMAIL={$_CLIENT_EMAIL}'
+      - 'CLIENT_ID={$_CLIENT_ID}'
+      - 'AUTH_URI={$_AUTH_URI}'
+      - 'TOKEN_URI={$_TOKEN_URI}'
+      - 'AUTH_PROVIDER_X509_CERT_URL={$_AUTH_PROVIDER_X509_CERT_URL}'
+      - 'CLIENT_X509_CERT_URL={$_CLIENT_X509_CERT_URL}'
+      - 'UNIVERSE_DOMAIN={$_UNIVERSE_DOMAIN}'
       
   # Push the Docker image to Google Container Registry
   - name: 'gcr.io/cloud-builders/docker'
