@@ -12,8 +12,22 @@ from google.cloud import storage
 from google.cloud import firestore
 from google.oauth2 import service_account
 
-credentials = service_account.Credentials.from_service_account_file(
-    'serviceAccountKey.json')
+
+def load_service_account_key():
+    service_account_key_json = os.environ.get('SERVICE_ACCOUNT_KEY')
+
+    if service_account_key_json:
+        return json.loads(service_account_key_json)
+    else:
+        # raise ValueError(
+        #     'Service account key not found in environment variable.')
+        return service_account.Credentials.from_service_account_file(
+            'serviceAccountKey.json')
+
+
+# credentials = service_account.Credentials.from_service_account_file(
+#     'serviceAccountKey.json')
+
 
 # Extract the port from command-line arguments
 if len(sys.argv) < 2:
@@ -71,10 +85,10 @@ log_file_path = os.path.join(BASE_DIRECTORY, "scraping.log")
 
 # Initialize Firestore client
 # db = firestore.Client()
-db = firestore.Client(credentials=credentials)
+db = firestore.Client(credentials=load_service_account_key())
 
 # Initialize the Cloud Storage client
-client = storage.Client(credentials=credentials)
+client = storage.Client(credentials=load_service_account_key())
 
 # Get a reference to the default bucket
 bucket = client.get_bucket(client.project)

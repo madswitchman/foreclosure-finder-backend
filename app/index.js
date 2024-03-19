@@ -76,7 +76,7 @@ const httpServer = app.listen(port, () => {
           pythonProcess = spawn('./scripts/dist/api_request', [wsProtocol, host, port]);
         } else {
           // Command to run the Python script directly on localhost
-          pythonProcess = spawn('python', ['./scripts/api_request.py', wsProtocol, host, port]);
+          pythonProcess = spawn('python', ['./app/scripts/api_request.py', wsProtocol, host, port]);
         }
 
     pythonProcess.stdin.write(JSON.stringify(requestData));
