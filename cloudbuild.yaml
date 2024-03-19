@@ -6,9 +6,9 @@ steps:
       - '-c'
       - |
         # Fetch secret values
-        export SERVICE_ACCOUNT_KEY=$(gcloud secrets versions access $SERVICE_ACCOUNT_KEY)
-        export TYPE=$(gcloud secrets versions access $TYPE)
-        export PROJECT_ID=$(gcloud secrets versions access $PROJECT_ID)
+        export SERVICE_ACCOUNT_KEY=$(gcloud secrets versions access $_SERVICE_ACCOUNT_KEY)
+        export TYPE=$(gcloud secrets versions access $_TYPE)
+        export PROJECT_ID=$(gcloud secrets versions access $_PROJECT_ID)
         export PRIVATE_KEY_ID=$(gcloud secrets versions access $_PRIVATE_KEY_ID)
         export PRIVATE_KEY=$(gcloud secrets versions access $_PRIVATE_KEY)
         export CLIENT_EMAIL=$(gcloud secrets versions access $_CLIENT_EMAIL)
