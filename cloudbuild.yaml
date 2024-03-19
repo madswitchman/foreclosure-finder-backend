@@ -6,20 +6,18 @@ steps:
       - '-c'
       - |
         # Fetch secret values
-        export SECRETS=$(gcloud secrets versions access latest --secret="all_secrets")
-        # Parse secret values
-        export SERVICE_ACCOUNT_KEY=$(echo "$SECRETS" | jq -r '.SERVICE_ACCOUNT_KEY')
-        export TYPE=$(echo "$SECRETS" | jq -r '.TYPE')
-        export PROJECT_ID=$(echo "$SECRETS" | jq -r '.PROJECT_ID')
-        export PRIVATE_KEY_ID=$(echo "$SECRETS" | jq -r '.PRIVATE_KEY_ID')
-        export PRIVATE_KEY=$(echo "$SECRETS" | jq -r '.PRIVATE_KEY')
-        export CLIENT_EMAIL=$(echo "$SECRETS" | jq -r '.CLIENT_EMAIL')
-        export CLIENT_ID=$(echo "$SECRETS" | jq -r '.CLIENT_ID')
-        export AUTH_URI=$(echo "$SECRETS" | jq -r '.AUTH_URI')
-        export TOKEN_URI=$(echo "$SECRETS" | jq -r '.TOKEN_URI')
-        export AUTH_PROVIDER_X509_CERT_URL=$(echo "$SECRETS" | jq -r '.AUTH_PROVIDER_X509_CERT_URL')
-        export CLIENT_X509_CERT_URL=$(echo "$SECRETS" | jq -r '.CLIENT_X509_CERT_URL')
-        export UNIVERSE_DOMAIN=$(echo "$SECRETS" | jq -r '.UNIVERSE_DOMAIN')
+        export SERVICE_ACCOUNT_KEY=$(gcloud secrets versions access latest --secret="SERVICE_ACCOUNT_KEY")
+        export TYPE=$(gcloud secrets versions access latest --secret="TYPE")
+        export PROJECT_ID=$(gcloud secrets versions access latest --secret="PROJECT_ID")
+        export PRIVATE_KEY_ID=$(gcloud secrets versions access latest --secret="PRIVATE_KEY_ID")
+        export PRIVATE_KEY=$(gcloud secrets versions access latest --secret="PRIVATE_KEY")
+        export CLIENT_EMAIL=$(gcloud secrets versions access latest --secret="CLIENT_EMAIL")
+        export CLIENT_ID=$(gcloud secrets versions access latest --secret="CLIENT_ID")
+        export AUTH_URI=$(gcloud secrets versions access latest --secret="AUTH_URI")
+        export TOKEN_URI=$(gcloud secrets versions access latest --secret="TOKEN_URI")
+        export AUTH_PROVIDER_X509_CERT_URL=$(gcloud secrets versions access latest --secret="AUTH_PROVIDER_X509_CERT_URL")
+        export CLIENT_X509_CERT_URL=$(gcloud secrets versions access latest --secret="CLIENT_X509_CERT_URL")
+        export UNIVERSE_DOMAIN=$(gcloud secrets versions access latest --secret="UNIVERSE_DOMAIN")
 
   # Build and deploy the Docker image to Cloud Run
   - name: 'gcr.io/cloud-builders/docker'
@@ -42,18 +40,18 @@ steps:
       - '--set-env-vars'
       - 'GOOGLE_CLOUD_RUN_ENABLE_HTTP2=true'
       - '--set-secrets'
-      - 'SERVICE_ACCOUNT_KEY=$SERVICE_ACCOUNT_KEY'
-      - 'TYPE=$TYPE'
-      - 'PROJECT_ID=$PROJECT_ID'
-      - 'PRIVATE_KEY_ID=$PRIVATE_KEY_ID'
-      - 'PRIVATE_KEY=$PRIVATE_KEY'
-      - 'CLIENT_EMAIL=$CLIENT_EMAIL'
-      - 'CLIENT_ID=$CLIENT_ID'
-      - 'AUTH_URI=$AUTH_URI'
-      - 'TOKEN_URI=$TOKEN_URI'
-      - 'AUTH_PROVIDER_X509_CERT_URL=$AUTH_PROVIDER_X509_CERT_URL'
-      - 'CLIENT_X509_CERT_URL=$CLIENT_X509_CERT_URL'
-      - 'UNIVERSE_DOMAIN=$UNIVERSE_DOMAIN'
+      - "SERVICE_ACCOUNT_KEY=$SERVICE_ACCOUNT_KEY"
+      - "TYPE=$TYPE"
+      - "PROJECT_ID=$PROJECT_ID"
+      - "PRIVATE_KEY_ID=$PRIVATE_KEY_ID"
+      - "PRIVATE_KEY=$PRIVATE_KEY"
+      - "CLIENT_EMAIL=$CLIENT_EMAIL"
+      - "CLIENT_ID=$CLIENT_ID"
+      - "AUTH_URI=$AUTH_URI"
+      - "TOKEN_URI=$TOKEN_URI"
+      - "AUTH_PROVIDER_X509_CERT_URL=$AUTH_PROVIDER_X509_CERT_URL"
+      - "CLIENT_X509_CERT_URL=$CLIENT_X509_CERT_URL"
+      - "UNIVERSE_DOMAIN=$UNIVERSE_DOMAIN"
 
   # Update Cloud Run service to send all traffic to the latest revision
   - name: 'gcr.io/cloud-builders/gcloud'
