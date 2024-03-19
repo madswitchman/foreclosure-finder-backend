@@ -12,19 +12,6 @@ from google.cloud import storage
 from google.cloud import firestore
 from google.oauth2 import service_account
 
-
-def load_service_account_key():
-    service_account_key_json = os.environ.get('SERVICE_ACCOUNT_KEY')
-
-    if service_account_key_json:
-        return json.loads(service_account_key_json)
-    else:
-        # raise ValueError(
-        #     'Service account key not found in environment variable.')
-        return service_account.Credentials.from_service_account_file(
-            'serviceAccountKey.json')
-
-
 # credentials = service_account.Credentials.from_service_account_file(
 #     'serviceAccountKey.json')
 
@@ -39,6 +26,44 @@ if len(sys.argv) < 2:
 ws_protocol = sys.argv[1]
 host = sys.argv[2]
 port = sys.argv[3]
+
+
+# def load_service_account_key():
+#     service_account_key_json = os.environ.get('SERVICE_ACCOUNT_KEY')
+
+#     if service_account_key_json:
+#         return json.loads(service_account_key_json)
+#     else:
+#         # raise ValueError(
+#         #     'Service account key not found in environment variable.')
+#         return service_account.Credentials.from_service_account_file(
+#             'serviceAccountKey.json')
+
+def load_service_account_key():
+    service_account_key_json = os.environ.get('SERVICE_ACCOUNT_KEY')
+
+    # Check if running locally
+    if service_account_key_json:
+        # Load credentials from Cloud Run environment variable
+        credentials = service_account.Credentials.from_service_account_info(
+            {
+                "type": os.getenv('TYPE'),
+                "project_id": os.getenv('PROJECT_ID'),
+                "private_key_id": os.getenv('PRIVATE_KEY_ID'),
+                "private_key": os.getenv('PRIVATE_KEY').replace('\\n', '\n'),
+                "client_email": os.getenv('CLIENT_EMAIL'),
+                "client_id": os.getenv('CLIENT_ID'),
+                "auth_uri": os.getenv('AUTH_URI'),
+                "token_uri": os.getenv('TOKEN_URI'),
+                "auth_provider_x509_cert_url": os.getenv('AUTH_PROVIDER_X509_CERT_URL'),
+                "client_x509_cert_url": os.getenv('CLIENT_X509_CERT_URL')
+            }
+        )
+        return credentials
+    else:
+        return service_account.Credentials.from_service_account_file(
+            'serviceAccountKey.json')
+
 
 # Get the current date and time
 current_datetime = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
