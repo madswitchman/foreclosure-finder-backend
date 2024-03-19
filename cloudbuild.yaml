@@ -1,25 +1,35 @@
 steps:
-  # Build and deploy the Docker image to Cloud Run
+  # Build the Docker image
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - 'build'
       - '-t'
       - 'gcr.io/$PROJECT_ID/foreclosurefinderapp'
-      - '.'
-    env:
+      - '--build-arg'
       - 'SERVICE_ACCOUNT_KEY=$_SERVICE_ACCOUNT_KEY'
+      - '--build-arg'
       - 'TYPE=$_TYPE'
+      - '--build-arg'
       - 'PROJECT_ID=$_PROJECT_ID'
+      - '--build-arg'
       - 'PRIVATE_KEY_ID=$_PRIVATE_KEY_ID'
+      - '--build-arg'
       - 'PRIVATE_KEY=$_PRIVATE_KEY'
+      - '--build-arg'
       - 'CLIENT_EMAIL=$_CLIENT_EMAIL'
+      - '--build-arg'
       - 'CLIENT_ID=$_CLIENT_ID'
+      - '--build-arg'
       - 'AUTH_URI=$_AUTH_URI'
+      - '--build-arg'
       - 'TOKEN_URI=$_TOKEN_URI'
+      - '--build-arg'
       - 'AUTH_PROVIDER_X509_CERT_URL=$_AUTH_PROVIDER_X509_CERT_URL'
+      - '--build-arg'
       - 'CLIENT_X509_CERT_URL=$_CLIENT_X509_CERT_URL'
+      - '--build-arg'
       - 'UNIVERSE_DOMAIN=$_UNIVERSE_DOMAIN'
-      - 'GOOGLE_CLOUD_RUN_ENABLE_HTTP2=true'
+      - '.'
       
   # Push the Docker image to Google Container Registry
   - name: 'gcr.io/cloud-builders/docker'
