@@ -17,7 +17,7 @@ steps:
       'CLIENT_ID',
       'AUTH_URI',
       # 'TOKEN_URI',
-      'AUTH_PROVIDER_X509_CERT_URL',
+      # 'AUTH_PROVIDER_X509_CERT_URL',
       'CLIENT_X509_CERT_URL',
       'UNIVERSE_DOMAIN'
     ]
@@ -49,7 +49,7 @@ steps:
       - 'CLIENT_ID=$$_CLIENT_ID'
       - 'AUTH_URI=$$_AUTH_URI'
       - 'TOKEN_URI=https://oauth2.googleapis.com/token'
-      - 'AUTH_PROVIDER_X509_CERT_URL=$$_AUTH_PROVIDER_X509_CERT_URL'
+      - 'AUTH_PROVIDER_X509_CERT_URL=https://www.googleapis.com/oauth2/v1/certs'
       - 'CLIENT_X509_CERT_URL=$$_CLIENT_X509_CERT_URL'
       - 'UNIVERSE_DOMAIN=$$_UNIVERSE_DOMAIN'
 
