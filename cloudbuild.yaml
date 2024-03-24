@@ -7,20 +7,20 @@ steps:
       - '-t'
       - 'gcr.io/$PROJECT_ID/foreclosurefinderapp'
       - '.'
-    # secretEnv: [
-    #   'SERVICE_ACCOUNT_KEY',
-    #   'TYPE', 
-    #   'PROJECT_ID',
-    #   'PRIVATE_KEY_ID',
-    #   'PRIVATE_KEY',
-    #   'CLIENT_EMAIL',
-    #   'CLIENT_ID',
-    #   'AUTH_URI',
-    #   'TOKEN_URI',
-    #   'AUTH_PROVIDER_X509_CERT_URL',
-    #   'CLIENT_X509_CERT_URL',
-    #   'UNIVERSE_DOMAIN'
-    # ]
+    secretEnv: [
+      'SERVICE_ACCOUNT_KEY',
+      'TYPE', 
+      'PROJECT_ID',
+      'PRIVATE_KEY_ID',
+      'PRIVATE_KEY',
+      'CLIENT_EMAIL',
+      'CLIENT_ID',
+      'AUTH_URI',
+      'TOKEN_URI',
+      'AUTH_PROVIDER_X509_CERT_URL',
+      'CLIENT_X509_CERT_URL',
+      'UNIVERSE_DOMAIN'
+    ]
   # Push the Docker image to Google Container Registry
   - name: 'gcr.io/cloud-builders/docker'
     args: ['push', 'gcr.io/$PROJECT_ID/foreclosurefinderapp']
