@@ -38,7 +38,7 @@ steps:
       - 'us-central1'
       - '--set-env-vars'
       - 'GOOGLE_CLOUD_RUN_ENABLE_HTTP2=true'
-      - 'SERVICE_ACCOUNT_KEY=$SERVICE_ACCOUNT_KEY'
+      - 'SERVICE_ACCOUNT_KEY=$_SERVICE_ACCOUNT_KEY'
       - 'TYPE=$TYPE'
       - 'PROJECT_ID=$PROJECT_ID'
       - 'PRIVATE_KEY_ID=$PRIVATE_KEY_ID'
