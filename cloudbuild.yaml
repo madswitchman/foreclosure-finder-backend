@@ -4,7 +4,8 @@ steps:
     entrypoint: 'bash'
     args:
       - '-c'
-      - echo '$$TYPE' 
+      - |
+        echo '$$TYPE' 
       # - echo '$$PROJECT_ID'
       # - echo '$$PRIVATE_KEY_ID'
       # - echo '$$PRIVATE_KEY'
@@ -46,7 +47,8 @@ steps:
     # entrypoint: 'bash'
     args:
       - '-c'
-      - echo '$$TYPE' 
+      - |
+        echo '$$TYPE'  
       # - echo '$$PROJECT_ID'
       # - echo '$$PRIVATE_KEY_ID'
       # - echo '$$PRIVATE_KEY'
@@ -82,7 +84,8 @@ steps:
   - name: 'gcr.io/cloud-builders/gcloud'
     args:
       - '-c'
-      - echo '$$TYPE' 
+      - |
+        echo '$$TYPE'  
       # - echo '$$PROJECT_ID'
       # - echo '$$PRIVATE_KEY_ID'
       # - echo '$$PRIVATE_KEY'
