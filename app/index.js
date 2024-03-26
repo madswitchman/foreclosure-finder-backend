@@ -8,7 +8,16 @@ admin.initializeApp({});
 
 const app = express();
 const host = process.env.HOST || 'localhost';
-const port = process.env.PORT || 8080;
+let port;
+
+if (process.env.PORT) {
+  // Running in the cloud, use the container port
+  port = process.env.PORT
+} else {
+  // Running on localhost, use port 443
+  port = 443;
+}
+
 app.set("view engine", "ejs");
 app.set("views", "app/views");
 

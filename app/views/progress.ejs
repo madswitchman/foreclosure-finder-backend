@@ -15,7 +15,16 @@
   <script>
     // Construct WebSocket URI dynamically
     const host = window.location.hostname;
-    const port = window.location.port;
+    let port;
+
+    if (window.location.protocol === 'https:') {
+      // Running in production environment
+      port = window.location.port || 443; // Use port 443 if not specified
+    } else {
+      // Running in development environment
+      port = window.location.port || 3000; // Use port 3000 if not specified
+    }
+    
     const wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
     const wsUri = `${wsProtocol}${host}:<%= port %>`;
 
