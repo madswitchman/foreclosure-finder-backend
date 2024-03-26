@@ -27,6 +27,19 @@ ws_protocol = sys.argv[1]
 host = sys.argv[2]
 port = sys.argv[3]
 
+# Define a function to initialize the WebSocket connection
+
+
+def initialize_websocket_connection():
+    try:
+        # Create a WebSocket object and connect to the server
+        ws = websocket.WebSocket()
+        ws.connect(websocket_server_address)
+        print("WebSocket connection opened successfully.")
+        return ws
+    except Exception as e:
+        print("Failed to connect to WebSocket server:", e)
+        return None
 
 # def load_service_account_key():
 #     service_account_key_json = os.environ.get('SERVICE_ACCOUNT_KEY')
@@ -38,6 +51,7 @@ port = sys.argv[3]
 #         #     'Service account key not found in environment variable.')
 #         return service_account.Credentials.from_service_account_file(
 #             'serviceAccountKey.json')
+
 
 def load_service_account_key():
     service_account_key_json = os.environ.get('SERVICE_ACCOUNT_KEY')
@@ -163,249 +177,258 @@ def send_data(data):
 try:
     # Connect to WebSocket server
     print(websocket_server_address)
-    ws = websocket.create_connection(websocket_server_address)
-    print("WebSocket connection opened from api_request.py with address: " +
-          websocket_server_address)
+    # Initialize the WebSocket connection
+    ws = initialize_websocket_connection()
 
-    continuation_token = None
-    total_records = None
-    processed_records = 0
-    # Capture the start time
-    start_time = time.time()
+    if ws:
+        print("WebSocket connection opened from api_request.py with address: " +
+              websocket_server_address)
 
-    # Create a CSV file in memory
-    csv_writer = csv.DictWriter(
-        csv_data, fieldnames=csv_headers, lineterminator='\n')
-    csv_writer.writeheader()
+        continuation_token = None
+        total_records = None
+        processed_records = 0
+        # Capture the start time
+        start_time = time.time()
 
-    # Create an empty list to collect all the rows
-    csv_rows = []
+        # Create a CSV file in memory
+        csv_writer = csv.DictWriter(
+            csv_data, fieldnames=csv_headers, lineterminator='\n')
+        csv_writer.writeheader()
 
-    while True:
-        sys.stdout.write("Entering the main loop.")
-        if continuation_token:
-            # Add continuation token to search parameters
-            search_params["continuationToken"] = continuation_token
+        # Create an empty list to collect all the rows
+        csv_rows = []
 
-        # Send a GET request to the primary API URL with the search parameters
-        # logging.debug("Sending request to primary API...")
+        while True:
+            sys.stdout.write("Entering the main loop.")
+            if continuation_token:
+                # Add continuation token to search parameters
+                search_params["continuationToken"] = continuation_token
 
-        primary_response = requests.get(
-            PRIMARY_BASE_URL, params=search_params, timeout=10)
-        print("Request URL: ", primary_response.request.url)
+            # Send a GET request to the primary API URL with the search parameters
+            # logging.debug("Sending request to primary API...")
 
-        # Print the request URL and response status code for the primary API
-        # logging.debug("Request URL: %s", primary_response.request.url)
-        # logging.debug("Response Status Code: %s", primary_response.status_code)
+            primary_response = requests.get(
+                PRIMARY_BASE_URL, params=search_params, timeout=10)
+            print("Request URL: ", primary_response.request.url)
 
-        # Check the response status code
-        if primary_response.status_code == 200:
-            print("Primary Response was 200")
-            # Parse the JSON response from the primary API
-            primary_data = primary_response.json()
+            # Print the request URL and response status code for the primary API
+            # logging.debug("Request URL: %s", primary_response.request.url)
+            # logging.debug("Response Status Code: %s", primary_response.status_code)
 
-            # Pretty-print the JSON response for the primary API
-            # logging.debug("Primary API Response:\n%s",
-            #               json.dumps(primary_data, indent=4))
+            # Check the response status code
+            if primary_response.status_code == 200:
+                print("Primary Response was 200")
+                # Parse the JSON response from the primary API
+                primary_data = primary_response.json()
 
-            # Grab the continuation_token from the response
-            continuation_token = primary_data.get("continuationToken", "")
+                # Pretty-print the JSON response for the primary API
+                # logging.debug("Primary API Response:\n%s",
+                #               json.dumps(primary_data, indent=4))
 
-            # Calculate the total number of records from the API response
-            if total_records is None:
-                print("Total records is none")
-                total_records = primary_data.get("searchResultCount", 0)
+                # Grab the continuation_token from the response
+                continuation_token = primary_data.get("continuationToken", "")
 
-            if primary_data.get("data"):
-                print("Primary Data get")
-                # Initialize a CSV file for writing
-                # with open(csv_file_path, "a", encoding="utf-8", newline="") as csvfile:
-                #     writer = csv.DictWriter(csvfile, fieldnames=csv_headers)
+                # Calculate the total number of records from the API response
+                if total_records is None:
+                    print("Total records is none")
+                    total_records = primary_data.get("searchResultCount", 0)
 
-                # Write the CSV headers in the first iteration
-                # if csvfile.tell() == 0:
-                #     writer.writeheader()
+                if primary_data.get("data"):
+                    print("Primary Data get")
+                    # Initialize a CSV file for writing
+                    # with open(csv_file_path, "a", encoding="utf-8", newline="") as csvfile:
+                    #     writer = csv.DictWriter(csvfile, fieldnames=csv_headers)
 
-                # Extract and write the data to the CSV file
-                for item in primary_data.get("data", []):
-                    print("Processing data in the main loop (primary_data)...")
-                    data_row = {}  # Create a dictionary for each row of data
+                    # Write the CSV headers in the first iteration
+                    # if csvfile.tell() == 0:
+                    #     writer.writeheader()
 
-                    property_info = item.get("propertyInfo", {})
-                    listing_status = item.get("listingStatus", {})
-                    auction_info = item.get("auctionRunInfo", {})
+                    # Extract and write the data to the CSV file
+                    for item in primary_data.get("data", []):
+                        print("Processing data in the main loop (primary_data)...")
+                        data_row = {}  # Create a dictionary for each row of data
 
-                    # Increment the processed records count
-                    processed_records += 1
+                        property_info = item.get("propertyInfo", {})
+                        listing_status = item.get("listingStatus", {})
+                        auction_info = item.get("auctionRunInfo", {})
 
-                    # Calculate and display progress
-                    progress = (processed_records / total_records) * 100
-                    # logging.info("Progress: %.2f%%", progress)
-                    progress_message = f"Progress: {progress:.2f}%"
-                    print(f"Progress: {progress:.2f}%")
-                    # Send progress update as JSON
-                    sys.stdout.write(f"{{\"progress\": {progress}}}\n")
-                    sys.stdout.flush()
-                    # logging.info(progress_message)
+                        # Increment the processed records count
+                        processed_records += 1
 
-                    data_row["Address"] = property_info.get("address", "")
-                    data_row["City"] = property_info.get("city", "")
-                    data_row["State"] = property_info.get("state", "")
-                    data_row["Zip"] = property_info.get("postalCode", "")
-                    data_row["County"] = property_info.get("county", "")
-                    data_row["Living Square Feet"] = property_info.get(
-                        "interiorSqFt", "")
-                    data_row["Year Built"] = property_info.get(
-                        "yearBuilt", "")
-                    data_row["Lot (Acres)"] = property_info.get(
-                        "lotSize", "")
-                    data_row["Bedrooms"] = property_info.get(
-                        "bedrooms", "")
-                    data_row["Bathrooms"] = property_info.get(
-                        "fullBathrooms", "")
-                    data_row["Property Use"] = property_info.get(
-                        "propertyType", "")
-                    data_row["Vacant?"] = property_info.get(
-                        "occupancyStatus", "")
-                    data_row["Listing Status"] = listing_status.get(
-                        "statusText", "")
-                    data_row["Opening bid"] = auction_info.get(
-                        "startingBid", "")
-                    data_row["Auction Date"] = auction_info.get(
-                        "endDate", "")
-                    data_row["URL"] = f'=HYPERLINK("{property_info.get("websiteUrl", "")}", "Link")'
+                        # Calculate and display progress
+                        progress = (processed_records / total_records) * 100
+                        # logging.info("Progress: %.2f%%", progress)
+                        progress_message = f"Progress: {progress:.2f}%"
+                        print(f"Progress: {progress:.2f}%")
+                        # Send progress update as JSON
+                        sys.stdout.write(f"{{\"progress\": {progress}}}\n")
+                        sys.stdout.flush()
+                        # logging.info(progress_message)
 
-                    # csv_writer.writerow(data_row)
+                        data_row["Address"] = property_info.get("address", "")
+                        data_row["City"] = property_info.get("city", "")
+                        data_row["State"] = property_info.get("state", "")
+                        data_row["Zip"] = property_info.get("postalCode", "")
+                        data_row["County"] = property_info.get("county", "")
+                        data_row["Living Square Feet"] = property_info.get(
+                            "interiorSqFt", "")
+                        data_row["Year Built"] = property_info.get(
+                            "yearBuilt", "")
+                        data_row["Lot (Acres)"] = property_info.get(
+                            "lotSize", "")
+                        data_row["Bedrooms"] = property_info.get(
+                            "bedrooms", "")
+                        data_row["Bathrooms"] = property_info.get(
+                            "fullBathrooms", "")
+                        data_row["Property Use"] = property_info.get(
+                            "propertyType", "")
+                        data_row["Vacant?"] = property_info.get(
+                            "occupancyStatus", "")
+                        data_row["Listing Status"] = listing_status.get(
+                            "statusText", "")
+                        data_row["Opening bid"] = auction_info.get(
+                            "startingBid", "")
+                        data_row["Auction Date"] = auction_info.get(
+                            "endDate", "")
+                        data_row["URL"] = f'=HYPERLINK("{property_info.get("websiteUrl", "")}", "Link")'
 
-                    # Make the secondary API call to retrieve additional data
-                    global_property_id = property_info.get(
-                        "globalPropertyId", "")
-                    secondary_params = {
-                        "GlobalPropertyId": global_property_id
-                    }
-                    # logging.debug("Sending request to secondary API...")
-                    secondary_response = requests.get(
-                        SECONDARY_BASE_URL, params=secondary_params, timeout=10)
+                        # csv_writer.writerow(data_row)
 
-                    # Print the request URL and response status code for the secondary API
-                    # logging.debug("Request URL: %s",
-                    #               secondary_response.request.url)
-                    # logging.debug("Response Status Code: %s",
-                    #               secondary_response.status_code)
+                        # Make the secondary API call to retrieve additional data
+                        global_property_id = property_info.get(
+                            "globalPropertyId", "")
+                        secondary_params = {
+                            "GlobalPropertyId": global_property_id
+                        }
+                        # logging.debug("Sending request to secondary API...")
+                        secondary_response = requests.get(
+                            SECONDARY_BASE_URL, params=secondary_params, timeout=10)
 
-                    # Check the response status code for the secondary API call
-                    if secondary_response.status_code == 200:
-                        print("Processing data in the main loop (secondary_data)...")
-                        # Parse the JSON response from the secondary API
-                        secondary_data = secondary_response.json()
+                        # Print the request URL and response status code for the secondary API
+                        # logging.debug("Request URL: %s",
+                        #               secondary_response.request.url)
+                        # logging.debug("Response Status Code: %s",
+                        #               secondary_response.status_code)
 
-                        # Pretty-print the JSON response for the secondary API
-                        # logging.debug("Secondary API Response:\n%s", json.dumps(
-                        #     secondary_data, indent=4))
+                        # Check the response status code for the secondary API call
+                        if secondary_response.status_code == 200:
+                            print(
+                                "Processing data in the main loop (secondary_data)...")
+                            # Parse the JSON response from the secondary API
+                            secondary_data = secondary_response.json()
 
-                        # Extract and update data_row with additional
-                        # data from the secondary API response
-                        data_row["Lot (Square Feet)"] = secondary_data.get(
-                            "additionalPropertyCharacteristicsModel", {}).get("lotSize", "")
-                        data_row["Subdivision"] = secondary_data.get(
-                            "countyTaxAssessmentModel", {}).get("subdivisionName", "")
-                        data_row["APN"] = secondary_data.get(
-                            "countyTaxAssessmentModel", {}).get("apn", "")
-                        data_row["Units Count"] = secondary_data.get(
-                            "additionalPropertyCharacteristicsModel", {}).get("numUnits", "")
-                        data_row["# of Stories"] = secondary_data.get(
-                            "additionalPropertyCharacteristicsModel", {}).get("numStories", "")
-                        data_row["Garage Type"] = secondary_data.get(
-                            "additionalPropertyCharacteristicsModel", {}).get("garageType", "")
-                        data_row["Air Conditioning Type"] = secondary_data.get(
-                            "additionalPropertyCharacteristicsModel", {}).get("ac", "")
-                        data_row["Heating Type"] = secondary_data.get(
-                            "additionalPropertyCharacteristicsModel", {}).get("heating", "")
-                        data_row["Fireplace"] = secondary_data.get(
-                            "additionalPropertyCharacteristicsModel", {}).get("firePlace", "")
-                        data_row["Tax Amount"] = secondary_data.get(
-                            "countyTaxAssessmentModel", {}).get("taxAmount", "")
-                        data_row["Assessment Year"] = secondary_data.get(
-                            "countyTaxAssessmentModel", {}).get("assessmentYear", "")
-                        data_row["Assessed Total Value"] = secondary_data.get(
-                            "countyTaxAssessmentModel", {}).get("totalAssessedValue", "")
-                        data_row["Assessed Land Value"] = secondary_data.get(
-                            "countyTaxAssessmentModel", {}).get("assessedLandValue", "")
-                        data_row["Assessed Improvement Value"] = secondary_data.get(
-                            "countyTaxAssessmentModel", {}).get("assessedImprovement", "")
-                        data_row["Market Value"] = secondary_data.get(
-                            "countyTaxAssessmentModel", {}).get("totalMarketValue", "")
-                        data_row["Market Land Value"] = secondary_data.get(
-                            "countyTaxAssessmentModel", {}).get("marketLandValue", "")
-                        data_row["Market Improvement Value"] = secondary_data.get(
-                            "countyTaxAssessmentModel", {}).get("marketImprovementValue", "")
+                            # Pretty-print the JSON response for the secondary API
+                            # logging.debug("Secondary API Response:\n%s", json.dumps(
+                            #     secondary_data, indent=4))
 
-                        # Write the data_row to the CSV file
-                        # writer.writerow(data_row)
-                        # csv_writer.writerow(item)
-                        # Filter data_row to include only fields present in csv_headers
-                        filtered_data_row = {key: item.get(
-                            key, "") for key in csv_headers}
+                            # Extract and update data_row with additional
+                            # data from the secondary API response
+                            data_row["Lot (Square Feet)"] = secondary_data.get(
+                                "additionalPropertyCharacteristicsModel", {}).get("lotSize", "")
+                            data_row["Subdivision"] = secondary_data.get(
+                                "countyTaxAssessmentModel", {}).get("subdivisionName", "")
+                            data_row["APN"] = secondary_data.get(
+                                "countyTaxAssessmentModel", {}).get("apn", "")
+                            data_row["Units Count"] = secondary_data.get(
+                                "additionalPropertyCharacteristicsModel", {}).get("numUnits", "")
+                            data_row["# of Stories"] = secondary_data.get(
+                                "additionalPropertyCharacteristicsModel", {}).get("numStories", "")
+                            data_row["Garage Type"] = secondary_data.get(
+                                "additionalPropertyCharacteristicsModel", {}).get("garageType", "")
+                            data_row["Air Conditioning Type"] = secondary_data.get(
+                                "additionalPropertyCharacteristicsModel", {}).get("ac", "")
+                            data_row["Heating Type"] = secondary_data.get(
+                                "additionalPropertyCharacteristicsModel", {}).get("heating", "")
+                            data_row["Fireplace"] = secondary_data.get(
+                                "additionalPropertyCharacteristicsModel", {}).get("firePlace", "")
+                            data_row["Tax Amount"] = secondary_data.get(
+                                "countyTaxAssessmentModel", {}).get("taxAmount", "")
+                            data_row["Assessment Year"] = secondary_data.get(
+                                "countyTaxAssessmentModel", {}).get("assessmentYear", "")
+                            data_row["Assessed Total Value"] = secondary_data.get(
+                                "countyTaxAssessmentModel", {}).get("totalAssessedValue", "")
+                            data_row["Assessed Land Value"] = secondary_data.get(
+                                "countyTaxAssessmentModel", {}).get("assessedLandValue", "")
+                            data_row["Assessed Improvement Value"] = secondary_data.get(
+                                "countyTaxAssessmentModel", {}).get("assessedImprovement", "")
+                            data_row["Market Value"] = secondary_data.get(
+                                "countyTaxAssessmentModel", {}).get("totalMarketValue", "")
+                            data_row["Market Land Value"] = secondary_data.get(
+                                "countyTaxAssessmentModel", {}).get("marketLandValue", "")
+                            data_row["Market Improvement Value"] = secondary_data.get(
+                                "countyTaxAssessmentModel", {}).get("marketImprovementValue", "")
 
-                        # Merge primary and secondary data
-                        merged_data = {**item, **filtered_data_row}
+                            # Write the data_row to the CSV file
+                            # writer.writerow(data_row)
+                            # csv_writer.writerow(item)
+                            # Filter data_row to include only fields present in csv_headers
+                            filtered_data_row = {key: item.get(
+                                key, "") for key in csv_headers}
 
-                        # Filter merged_data to include only fields present in csv_headers
-                        filtered_merged_data = {key: merged_data.get(
-                            key, "") for key in csv_headers}
+                            # Merge primary and secondary data
+                            merged_data = {**item, **filtered_data_row}
 
-                        # csv_rows.append(data_row)
-                        # Write the row to the CSV file in memory
-                        # csv_rows.append(filtered_merged_data)
-                        csv_writer.writerow(data_row)
+                            # Filter merged_data to include only fields present in csv_headers
+                            filtered_merged_data = {key: merged_data.get(
+                                key, "") for key in csv_headers}
 
-                # Send progress update to Node.js server
-                send_progress(progress)
+                            # csv_rows.append(data_row)
+                            # Write the row to the CSV file in memory
+                            # csv_rows.append(filtered_merged_data)
+                            csv_writer.writerow(data_row)
 
-            # else:
-                # logging.warning(
-                #     "No data returned in the response. CSV file not created.")
+                    # Send progress update to Node.js server
+                    send_progress(progress)
 
-            if not continuation_token:
-                print("No continuation token")
-                break  # No more data, exit the loop
+                # else:
+                    # logging.warning(
+                    #     "No data returned in the response. CSV file not created.")
 
-        else:
-            print("Failed to fetch data from the primary API. Status code: %s",
-                  primary_response.status_code)
-            # logging.error(
-            #     "Failed to fetch data from the primary API. Status code: %s",
-            #     primary_response.status_code)
-            break
+                if not continuation_token:
+                    print("No continuation token")
+                    break  # No more data, exit the loop
 
-    # Write all rows to the CSV file
-    csv_writer.writerows(csv_rows)
+            else:
+                print("Failed to fetch data from the primary API. Status code: %s",
+                      primary_response.status_code)
+                # logging.error(
+                #     "Failed to fetch data from the primary API. Status code: %s",
+                #     primary_response.status_code)
 
-    print(csv_rows)
+        # Write all rows to the CSV file
+        csv_writer.writerows(csv_rows)
 
-    # Upload the CSV file to Cloud Storage
-    blob.upload_from_string(csv_data.getvalue(), content_type='text/csv')
+        print(csv_rows)
 
-    # Get the public URL of the uploaded file
-    file_url = blob.public_url
-    # file_url = blob.generate_signed_url(
-    # datetime.timedelta(days=1), method='GET')
+        # Upload the CSV file to Cloud Storage
+        blob.upload_from_string(csv_data.getvalue(), content_type='text/csv')
 
-    # Send the file info (name and URL) to the Node.js server
-    send_data({"type": "fileInfo", "fileName": blob.name, "fileUrl": file_url})
+        # Get the public URL of the uploaded file
+        file_url = blob.public_url
+        # file_url = blob.generate_signed_url(
+        # datetime.timedelta(days=1), method='GET')
 
-    # After successfully uploading the file
-    notify_file_uploaded()
+        # Send the file info (name and URL) to the Node.js server
+        send_data(
+            {"type": "fileInfo", "fileName": blob.name, "fileUrl": file_url})
 
-    # Send progress update to Node.js server
-    send_progress(100)
-    # csv_data.seek(0)  # Reset the pointer to the beginning of the StringIO
+        # After successfully uploading the file
+        notify_file_uploaded()
 
-    print("Main loop finished.")
+        # Send progress update to Node.js server
+        send_progress(100)
+        # csv_data.seek(0)  # Reset the pointer to the beginning of the StringIO
+
+        print("Main loop finished.")
+
+    else:
+        # WebSocket connection failed, handle accordingly
+        sys.exit(1)
 
 except Exception as e:
     print("Failed to connect to WebSocket server:", e)
 
 finally:
-    # Close WebSocket connection
-    ws.close()
+    # Close the WebSocket connection in the finally block to ensure cleanup
+    if ws:
+        ws.close()
