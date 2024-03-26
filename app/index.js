@@ -10,11 +10,11 @@ const app = express();
 const host = process.env.HOST || 'localhost';
 let port;
 
-if (process.env.PORT) {
-  // Running in the cloud, use the container port
+if (process.env.HOST === 'localhost') {
+  // Running on localhost, use port 443
   port = process.env.PORT
 } else {
-  // Running on localhost, use port 443
+  // Running in the cloud, use the container port
   port = 443;
 }
 
