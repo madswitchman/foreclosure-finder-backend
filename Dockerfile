@@ -48,11 +48,15 @@ COPY --from=python_build /app/scripts/dist/api_request /app/scripts/dist/api_req
 # Copy the Node.js application files
 COPY app/ app/
 
+# Expose ports 8080 and 443
+EXPOSE 8080
+EXPOSE 443
+
 # Set environment variables
 ENV WS_PROTOCOL="wss://"
 ENV HOST="foreclosure-finder-backend-lv672goida-uc.a.run.app"
 ENV PYTHONUNBUFFERED = 'true';
-ENV PORT = '443';
+ENV PORT = '8080';
 
 # Command to run the application
 CMD ["node", "app/index.js"]
