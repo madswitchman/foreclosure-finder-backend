@@ -54,7 +54,7 @@ EXPOSE 443
 
 # Set environment variables
 ENV WS_PROTOCOL="wss://"
-ENV HOST="foreclosure-finder-backend-lv672goida-uc.a.run.app"
+ENV HTTP_HOST="foreclosure-finder-backend-lv672goida-uc.a.run.app"
 ENV PYTHONUNBUFFERED = 'true';
 ENV PORT = '8080';
 

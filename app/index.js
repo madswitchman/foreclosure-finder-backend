@@ -27,9 +27,9 @@ process.env.PYTHONUNBUFFERED = 'true';
 app.get("/run-script", (req, res) => {
     // Start the Python script if it hasn't been started yet
     if (!pythonProcess) {
-        console.log("process.env.HOST value: ", process.env.HOST);
+        console.log("process.env.HTTP_HOST value: ", process.env.HTTP_HOST);
 
-        if (process.env.HOST === 'foreclosure-finder-backend-lv672goida-uc.a.run.app') {
+        if (process.env.HTTP_HOST === 'foreclosure-finder-backend-lv672goida-uc.a.run.app') {
             pythonProcess = spawn('./scripts/dist/api_request');
         } else {
             pythonProcess = spawn('python', ['./app/scripts/api_request.py']);
