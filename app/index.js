@@ -1,191 +1,140 @@
-//const functions = require("firebase-functions");
-const WebSocket = require("ws");
-const express = require("express");
-const {spawn} = require("child_process");
 const admin = require("firebase-admin");
+const express = require("express");
+const fs = require('fs');
+const path = require('path');
+const { spawn } = require("child_process");
+const { Storage } = require('@google-cloud/storage');
 
 admin.initializeApp({});
 
 const app = express();
 const host = process.env.HOST || 'localhost';
-let port;
+const port = process.env.PORT || 8080; // Set default port to 8080
 
-if (process.env.HOST === 'localhost') {
-  // Running on localhost, use port 443
-  port = process.env.PORT
-} else {
-  // Running in the cloud, use the container port
-  port = 443;
-}
+// Initialize Google Cloud Storage client
+const storage = new Storage();
+
+let pythonProcess;
+let progressData = {progress: 0};
+let fileInfoData = {filename: '', fileUrl: ''};
 
 app.set("view engine", "ejs");
 app.set("views", "app/views");
 
-// Set the environment variable PYTHONUNBUFFERED to true
 process.env.PYTHONUNBUFFERED = 'true';
 
-const httpServer = app.listen(port, () => {
-  const wsProtocol = process.env.WS_PROTOCOL || 'ws://';
-  console.log(`HTTP Server is listening on ${host}:${port}`);
-
-  const fileInfo = {}; // Object to store fileInfo data
-
-  const wss = new WebSocket.Server({server: httpServer});
-
-  wss.on("connection", (ws) => {
-    console.log("WebSocket index.js connected");
-
-    // Send fileInfo message when WebSocket connection is established
-    if (fileInfo.fileName && fileInfo.fileUrl) {
-      ws.send(JSON.stringify({
-        type: "fileInfo",
-        fileName: fileInfo.fileName,
-        fileUrl: fileInfo.fileUrl,
-      }));
-    }
-
-    // ws.on("message", (message) => {
-    //   console.log("Received message from client:", message.toString());
-    // });
-    ws.onmessage = function(event) {
-      console.log("Received message from client:", event.data);
-      // You can access the received message using event.data
-    };
-
-    // ws.on("close", () => {
-    //   console.log("WebSocket index.js disconnected");
-    // });
-    ws.onclose = function() {
-      console.log("WebSocket index.js disconnected");
-    };
-  });
-
-  app.get('/check-python', (req, res) => {
-    try {
-      // Run Python script to check Python version
-      const pythonVersion = execSync('python --version').toString();
-      res.send(`Python version: ${pythonVersion}`);
-    } catch (error) {
-      // Handle error if Python is not installed or script execution fails
-      res.status(500).send('Error checking Python version');
-    }
-  });
-  
-  app.get("/run-script", (req, res) => {
-    const requestData = req.query;
-    console.log("Request data: ", requestData);
-    console.log("WS_PROTOCOL: ", wsProtocol);
-    console.log("HOST: ", host);
-    //const pythonProcess = spawn("python", ["app/scripts/api_request.py", wsProtocol, host, port]);
-
-        // Check if running on localhost or cloud
-        if (process.env.WS_PROTOCOL === 'wss://') {
-          // Command to run the packaged Python executable in the cloud
-          console.log("Entered into cloud env python execution");
-          pythonProcess = spawn('./scripts/dist/api_request', [wsProtocol, host, port]);
+// Render the HTML template when /run-script is accessed
+app.get("/run-script", (req, res) => {
+    // Start the Python script if it hasn't been started yet
+    if (!pythonProcess) {
+        console.log("process.env.HOST value: ", process.env.HOST);
+        if (process.env.HOST === 'foreclosure-finder-backend-lv672goida-uc.a.run.app') {
+            pythonProcess = spawn('./scripts/dist/api_request');
         } else {
-          // Command to run the Python script directly on localhost
-          pythonProcess = spawn('python', ['./app/scripts/api_request.py', wsProtocol, host, port]);
+            pythonProcess = spawn('python', ['./app/scripts/api_request.py']);
         }
+        
+        pythonProcess.stdin.write(JSON.stringify(req.query));
+        pythonProcess.stdin.end();
 
-    pythonProcess.stdin.write(JSON.stringify(requestData));
-    pythonProcess.stdin.end();
-
-    res.render("progress", {wsProtocol, host, port});
-
-    // eslint-disable-next-line require-jsdoc
-    function sendProgressUpdate(progress) {
-      // console.log(progress);
-      wss.clients.forEach((client) => {
-        if (client.readyState === WebSocket.OPEN) {
-          client.send(JSON.stringify({progress}));
-        }
-      });
-    }
-
-    pythonProcess.stdout.on("data", (data) => {
-      const message = data.toString();
-      console.log("Received message from Python script:", message);
-
-      const lines = data.toString().split("\n");
-      lines.forEach((line) => {
-        try {
-          const progressMatch = line.match(/{"progress":([^}]*)}/);
-
-          if (progressMatch && progressMatch[1] !== null) {
-            const progressData = JSON.parse(progressMatch[0]);
-            sendProgressUpdate(progressData.progress);
-            // console.log("progressMatch: ", progressMatch[1]);
-          }
-          // if (progressData.progress === 100) {
-          // console.log("Made it to line 89");
-          // const fileInfoMatch = line.match(/{"type":([^}]*)}/);
-
-          // eslint-disable-next-line max-len
-          // const fileInfoMatch = line.match(/{"type": "fileInfo", "fileName": "([^"]*)", "fileUrl": "([^"]*)"/);
-          // eslint-disable-next-line max-len
-          const fileInfoMatch = line.match(/{"\s*type\s*":\s*"fileInfo"\s*,\s*"fileName"\s*:\s*"([^"]*)"\s*,\s*"fileUrl"\s*:\s*"([^"]*)"\s*}/);
-          // console.log("At fileInfoMatch");
-          // console.log(fileInfoMatch);
-          // console.log("fileInfoMatch: ", fileInfoMatch);
-          // console.log("Received fileInfo:", fileInfo);
-
-          if (fileInfoMatch) {
-            console.log("fileInfoMatch is not null");
-          }
-          // const fileNameData = JSON.parse(fileInfoMatch[0]);
-          // const fileName = fileNameData.fileName;
-          // const fileUrl = fileNameData.fileUrl;
-          // const fileInfoData = JSON.parse(fileNameData[0]);
-          // console.log("fileInfoMatch: ", fileInfoMatch);
-          // console.log("fileNameData: ", fileNameData);
-          // console.log("fileName: ", fileName);
-          // console.log("fileUrl: ", fileUrl);
-          // console.log("fileInfoData: ", fileInfoData);
-          // Emit a WebSocket message with file information
-          if (fileInfoMatch && fileInfoMatch[1] !== null) {
-            console.log("Inside fileInfoMatch");
-            // const fileName = fileInfoMatch[1];
-            // const fileUrl = fileInfoMatch[2];
-            const fileName = fileInfoMatch[1];
-            const fileUrl = fileInfoMatch[2];
-            // console.log("Received fileInfo:", fileInfo);
-            console.log("Received fileInfo:", {fileName, fileUrl});
-
-            // Debugging log statement to confirm the fileInfo message sending
-            console.log("Sending fileInfo message:", fileInfo);
-
-            wss.clients.forEach((client) => {
-              if (client.readyState === WebSocket.OPEN) {
-                // console.log("We are in the web socket emit - line 93");
-                client.send(JSON.stringify({
-                  type: "fileInfo",
-                  fileName: fileName,
-                  fileUrl: fileUrl,
-                }));
-              }
+        // Listen for data from the Python process and update progressData accordingly
+        pythonProcess.stdout.on("data", (data) => {
+            const lines = data.toString().split("\n");
+            lines.forEach((line) => {
+                try {
+                    const progressMatch = line.match(/{"progress":([^}]*)}/);
+                    if (progressMatch && progressMatch[1] !== null) {
+                        progressData = { progress: progressMatch[1] };
+                    }
+                    const fileInfoMatch = line.match(/{"\s*type\s*":\s*"fileInfo"\s*,\s*"fileName"\s*:\s*"([^"]*)"\s*,\s*"fileUrl"\s*:\s*"([^"]*)"\s*}/);
+                    if (fileInfoMatch && fileInfoMatch[1] !== null) {
+                        const filename = fileInfoMatch[1];
+                        const fileUrl = fileInfoMatch[2];
+                        fileInfoData = { filename, fileUrl };
+                    }
+                } catch (error) {
+                    console.error("Error parsing data:", error);
+                }
             });
-            // }
-          }
-        } catch (error) {
-          console.error("Error parsing progress data:", error);
-        }
-      });
-    });
+        });
 
-    pythonProcess.stderr.on("data", (data) => {
-      console.error(`ERROR: ${data.toString()}`);
-    });
+        // Handle errors from the Python process
+        pythonProcess.stderr.on("data", (data) => {
+            console.error(`ERROR: ${data.toString()}`);
+        });
 
-    pythonProcess.on("close", (code) => {
-      console.log("Python script closed with code", code);
-    });
-  });
-
-  app.use((req, res) => {
-    return res.status(404).send("Not Found");
-  });
+        // Handle the Python process exit
+        pythonProcess.on("exit", (code) => {
+            console.log(`Python script exited with code ${code}`);
+            // Reset progressData and pythonProcess variables
+            pythonProcess = null;
+        });
+    }
+    res.render("progress");
 });
 
-//exports.app = functions.https.onRequest(app);
-module.exports = app;
+// Endpoint to fetch progress updates
+app.get("/progress-updates", (req, res) => {
+    // Send the current progress data
+    res.json(progressData);
+});
+
+app.get("/file-link", (req, res) => {
+    if (fileInfoData) {
+        res.json({ fileInfo: fileInfoData });
+    }
+});
+
+app.get("/download-csv", async (req, res) => {
+    if (fileInfoData) {
+        try {
+            // Set up options for downloading the file
+            const options = {
+                destination: fileInfoData.filename
+            };
+
+            // Download the file from Google Cloud Storage to local
+            await storage.bucket('foreclosurefinderbackend').file(fileInfoData.filename).download(options);
+
+            // Construct the absolute path to the downloaded file
+            const absolutePath = path.resolve(__dirname, '..', fileInfoData.filename);
+
+            // Set the Content-Disposition header
+            res.setHeader('Content-Disposition', `attachment; filename="${fileInfoData.filename}"`);
+
+            // Stream the file to the response
+            const fileStream = fs.createReadStream(absolutePath);
+            fileStream.pipe(res);
+
+            // When the stream ends, delete the file
+            fileStream.on('end', () => {
+                fs.unlink(absolutePath, (unlinkErr) => {
+                    if (unlinkErr) {
+                        console.error("Error deleting file:", unlinkErr);
+                    } else {
+                        console.log("File deleted successfully");
+                    }
+                });
+            });
+
+            // Return to avoid sending the response again
+            return;
+        } catch (error) {
+            console.error("Error downloading file:", error);
+            return res.status(500).send("Internal Server Error");
+        }
+    } else {
+        return res.status(404).send("File not found");
+    }
+});
+
+
+app.use((req, res) => {
+    return res.status(404).send("Not Found");
+});
+
+const server = app.listen(port, () => {
+    console.log(`HTTP Server is listening on ${host}:${port}`);
+});
+
+module.exports = server; // Export server for testing

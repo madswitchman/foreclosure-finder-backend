@@ -1,76 +1,103 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Progress Monitor</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Progress Updates</title>
 </head>
-
 <body>
-  <h1>Progress Monitor</h1>
-  <div id="status">Status: <span id="statusValue">0%</span></div>
-  <div id="ws">WS URI: <span id="wsUriValue"></span></div>
-  <div id="downloadLinkContainer"></div>
-  <script>
-    // Construct WebSocket URI dynamically
-    const host = window.location.hostname;
-    const wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
-    const wsUri = `${wsProtocol}${host}:<%= port %>`;
+    <div id="progress-container">
+        <h1>Progress Updates</h1>
+        <ul id="progress-list">
+            <!-- Progress updates will be dynamically added here -->
+        </ul>
+    </div>
 
-    let port;
+    <div id="file-info-container">
+        <p>Link will appear here once complete</p>
+    </div>
 
-    if (window.location.protocol === 'https:') {
-      // Running in production environment
-      port = 443; // Use port 443 if not specified
-    } else {
-      // Running in development environment
-      port = window.location.port;
-    }
+    <script>
+        // Get the state from the query string
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+        const state = urlParams.get('state');
 
-    // Use the dynamically constructed WebSocket URI
-    const socket = new WebSocket(wsUri);
+        // Initialize interval variables
+        let progressInterval;
+        let fileLinkInterval;
 
-    socket.addEventListener('message', function (event) {
-      const data = JSON.parse(event.data);
-      console.log("Received WebSocket message from index.js:", data);
-      const statusValue = document.getElementById('statusValue');
+        // Function to update progress
+        function updateProgress(progress) {
+            const progressList = document.getElementById("progress-list");
+            progressList.innerHTML = ""; // Clear existing progress updates
 
-      if (data.progress !== undefined) {
-        // Display progress as a formatted percentage
-        const formattedProgress = `${data.progress.toFixed(2)}%`;
-        statusValue.innerText = formattedProgress;
-      }
-
-      if (statusValue.innerText === '100.00%') {
-        if (data.type === 'fileInfo') {
-          // Create a download link element
-          const downloadLink = document.createElement('a');
-          downloadLink.href = data.fileUrl;
-          downloadLink.download = data.fileName;
-          downloadLink.textContent = 'Click here to download';
-
-          // Append the download link to the container
-          const downloadLinkContainer = document.getElementById('downloadLinkContainer');
-          downloadLinkContainer.appendChild(downloadLink);
+            const listItem = document.createElement("li");
+            listItem.textContent = `Progress: ${progress}%`;
+            progressList.appendChild(listItem);
         }
-        // Close socket after use
-        //socket.close();
-      }
-    });
 
-    socket.addEventListener('open', function (event) {
-      // Send a message to the server to start the script
-      socket.send(JSON.stringify({ startScript: true }));
-    });
+        // Function to update file information
+        function updateFileInfo(response) {
+            const fileInfoContainer = document.getElementById("file-info-container");
 
-    socket.addEventListener('close', function (event) {
-      console.log('WebSocket connection from progress.ejs closed');
-    });
+            if (response.fileInfo.filename) {
+                //console.log("from updateFileInfo IF response.fileInfo: ", response.fileInfo)
+                const fileLink = document.createElement('a');
+                //fileLink.href = response.fileInfo.fileUrl;
+                fileLink.href = `/download-csv?${response.fileInfo.filename}`;
+                fileLink.textContent = response.fileInfo.filename;
+                fileLink.setAttribute('download', ''); // Set the "download" attribute to trigger download
+                fileLink.setAttribute("target", "_blank"); // Open the link in a new tab
 
-    // Set the WebSocket URI display
-    document.getElementById('wsUriValue').textContent = wsUri;
-  </script>
+                fileInfoContainer.innerHTML = ""; // Clear existing file information
+                fileInfoContainer.appendChild(fileLink);
+
+            } else {
+                fileInfoContainer.innerHTML = "<p>No File Information Available</p>";
+            }
+        }
+
+        // Function to fetch progress updates from the server
+        function fetchProgressUpdates(state) {
+            progressInterval = setInterval(() => {
+                fetch(`/progress-updates?state=${state}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.progress !== undefined) {
+                            updateProgress(data.progress);
+                            if (data.progress == 100){
+                                //clear to stop fetch after completion
+                                clearInterval(progressInterval);  
+                            }
+                        }
+                    })
+                    .catch(error => console.error("Error fetching progress updates:", error))
+                    .finally(() => {
+                        // Once progress updates are complete, fetch the file link
+                        fetchFileLink();
+                        // if (data.progress == 100){
+                        //         //clear to stop fetch after completion
+                        //         //clearInterval(progressInterval);  
+                        //     }
+                    });
+            }, 2000); // Fetch updates every 2 seconds
+        }
+
+        function fetchFileLink() {
+            fetch(`/file-link`)
+                .then(response => response.json())
+                .then(response => {
+                    // Once progress updates are complete, fetch the file link
+                    if (response.fileInfo.filename !== ''){
+                        updateFileInfo(response);
+                    }
+                })
+                .catch(error => console.error("Error fetching file link:", error));
+        }
+
+        // Fetch progress updates initially and periodically
+        fetchProgressUpdates(state);
+    </script>
 </body>
-
 </html>
