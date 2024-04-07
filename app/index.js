@@ -28,12 +28,12 @@ app.get("/run-script", (req, res) => {
     // Start the Python script if it hasn't been started yet
     if (!pythonProcess) {
         console.log("process.env.HOST value: ", process.env.HOST);
-        pythonProcess = spawn('python', ['./app/scripts/api_request.py']);
-        // if (process.env.HOST !== 'undefined') {
-        //     pythonProcess = spawn('./scripts/dist/api_request');
-        // } else {
-        //     pythonProcess = spawn('python', ['./app/scripts/api_request.py']);
-        // }
+
+        if (process.env.HOST !== 'undefined') {
+            pythonProcess = spawn('./scripts/dist/api_request');
+        } else {
+            pythonProcess = spawn('python', ['./app/scripts/api_request.py']);
+        }
         
         pythonProcess.stdin.write(JSON.stringify(req.query));
         pythonProcess.stdin.end();
