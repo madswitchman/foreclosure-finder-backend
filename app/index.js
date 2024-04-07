@@ -29,7 +29,7 @@ app.get("/run-script", (req, res) => {
     if (!pythonProcess) {
         console.log("process.env.HOST value: ", process.env.HOST);
 
-        if (process.env.HOST !== 'undefined') {
+        if (process.env.HOST === 'foreclosure-finder-backend-lv672goida-uc.a.run.app') {
             pythonProcess = spawn('./scripts/dist/api_request');
         } else {
             pythonProcess = spawn('python', ['./app/scripts/api_request.py']);
