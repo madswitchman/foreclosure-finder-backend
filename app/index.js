@@ -27,7 +27,7 @@ process.env.PYTHONUNBUFFERED = 'true';
 app.get("/run-script", (req, res) => {
     // Start the Python script if it hasn't been started yet
     if (!pythonProcess) {
-        console.log("process.env.HTTP_HOST value: ", process.env.HTTP_HOST);
+        console.log("Python initiated");
 
         if (process.env.HTTP_HOST === 'foreclosure-finder-backend-lv672goida-uc.a.run.app') {
             pythonProcess = spawn('./scripts/dist/api_request');
@@ -108,15 +108,15 @@ app.get("/download-csv", async (req, res) => {
             fileStream.pipe(res);
 
             // When the stream ends, delete the file
-            fileStream.on('end', () => {
-                fs.unlink(absolutePath, (unlinkErr) => {
-                    if (unlinkErr) {
-                        console.error("Error deleting file:", unlinkErr);
-                    } else {
-                        console.log("File deleted successfully");
-                    }
-                });
-            });
+            // fileStream.on('end', () => {
+            //     fs.unlink(absolutePath, (unlinkErr) => {
+            //         if (unlinkErr) {
+            //             console.error("Error deleting file:", unlinkErr);
+            //         } else {
+            //             console.log("File deleted successfully");
+            //         }
+            //     });
+            // });
 
             // Return to avoid sending the response again
             return;

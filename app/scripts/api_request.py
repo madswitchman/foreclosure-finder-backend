@@ -46,6 +46,9 @@ db = firestore.Client(credentials=load_service_account_key())
 client = storage.Client(credentials=load_service_account_key())
 bucket = client.get_bucket(client.project)
 
+state = request_data.get("state", "")
+sys.stdout.write(f"{{\"state\": {state}}}\n")
+
 PRIMARY_BASE_URL = "https://www.servicelinkauction.com/api/listingsvc/v1/listings"
 SECONDARY_BASE_URL = ("https://www.servicelinkauction.com/api/auctiongatewaysvc/" +
                       "v1/PropertyReportData")
@@ -67,8 +70,6 @@ csv_headers = [
     "Assessed Improvement Value", "Market Value", "Market Land Value",
     "Market Improvement Value", "URL"
 ]
-
-state = request_data.get("state", "")
 
 search_params = {
     "state": state,
@@ -94,6 +95,10 @@ try:
     total_records = None
     processed_records = 0
     start_time = datetime.datetime.now()
+
+    csv_writer = csv.DictWriter(
+        csv_data, fieldnames=csv_headers, lineterminator='\n')
+    csv_writer.writeheader()
 
     while True:
         if continuation_token:
@@ -139,9 +144,6 @@ try:
                         "URL": f'=HYPERLINK("{property_info.get("websiteUrl", "")}", "Link")'
                     }
 
-                    csv_writer = csv.DictWriter(
-                        csv_data, fieldnames=csv_headers, lineterminator='\n')
-                    csv_writer.writeheader()
                     csv_writer.writerow(data_row)
 
                     global_property_id = property_info.get(
