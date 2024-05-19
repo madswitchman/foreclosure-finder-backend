@@ -29,6 +29,7 @@
 
         // Function to update progress
         function updateProgress(progress) {
+            console.log("Updating progress:", progress);
             const progressList = document.getElementById("progress-list");
             progressList.innerHTML = ""; // Clear existing progress updates
 
@@ -39,6 +40,7 @@
 
         // Function to update file information
         function updateFileInfo(response) {
+            console.log("Updating file information:", response);
             const fileInfoContainer = document.getElementById("file-info-container");
 
             if (response.fileInfo.filename) {

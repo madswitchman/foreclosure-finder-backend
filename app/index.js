@@ -1,142 +1,108 @@
-const admin = require("firebase-admin");
+const axios = require('axios');
 const express = require("express");
-const fs = require('fs');
-const path = require('path');
-const { spawn } = require("child_process");
 const { Storage } = require('@google-cloud/storage');
 
-admin.initializeApp({});
-
 const app = express();
-const host = process.env.HOST || 'localhost';
-const port = process.env.PORT || 8080; // Set default port to 8080
-
-// Initialize Google Cloud Storage client
 const storage = new Storage();
 
-let pythonProcess;
-let progressData = {progress: 0};
-let fileInfoData = {filename: '', fileUrl: ''};
+let progressData = { progress: 0 };
+let fileInfoData = { filename: '', fileUrl: '' };
 
 app.set("view engine", "ejs");
 app.set("views", "app/views");
 
-process.env.PYTHONUNBUFFERED = 'true';
-
-// Render the HTML template when /run-script is accessed
-app.get("/run-script", (req, res) => {
-    // Start the Python script if it hasn't been started yet
-    if (!pythonProcess) {
-        console.log("Python initiated");
-
-        if (process.env.HTTP_HOST === 'foreclosure-finder-backend-lv672goida-uc.a.run.app') {
-            pythonProcess = spawn('./scripts/dist/api_request');
-        } else {
-            pythonProcess = spawn('python', ['./app/scripts/api_request.py']);
-        }
-        
-        pythonProcess.stdin.write(JSON.stringify(req.query));
-        pythonProcess.stdin.end();
-
-        // Listen for data from the Python process and update progressData accordingly
-        pythonProcess.stdout.on("data", (data) => {
-            const lines = data.toString().split("\n");
-            lines.forEach((line) => {
-                try {
-                    console.log("Received line from Python:", line); // Log received lines
-                    const progressMatch = line.match(/{"progress":([^}]*)}/);
-                    if (progressMatch && progressMatch[1] !== null) {
-                        progressData = { progress: progressMatch[1] };
-                    }
-                    const fileInfoMatch = line.match(/{"\s*type\s*":\s*"fileInfo"\s*,\s*"fileName"\s*:\s*"([^"]*)"\s*,\s*"fileUrl"\s*:\s*"([^"]*)"\s*}/);
-                    if (fileInfoMatch && fileInfoMatch[1] !== null) {
-                        const filename = fileInfoMatch[1];
-                        const fileUrl = fileInfoMatch[2];
-                        fileInfoData = { filename, fileUrl };
-                    }
-                } catch (error) {
-                    console.error("Error parsing data:", error);
-                }
-            });
-        });
-
-        // Handle errors from the Python process
-        pythonProcess.stderr.on("data", (data) => {
-            console.error(`ERROR: ${data.toString()}`);
-        });
-
-        // Handle the Python process exit
-        pythonProcess.on("exit", (code) => {
-            console.log(`Python script exited with code ${code}`);
-            // Reset progressData and pythonProcess variables
-            pythonProcess = null;
-        });
+app.get("/run-script", async (req, res) => {
+    try {
+        res.render("progress");
+        await callPythonFunction(req.query);
+    } catch (error) {
+        //console.error("Error calling Python function:", error);
+        res.status(500).send("Internal Server Error");
     }
-    res.render("progress");
 });
 
-// Endpoint to fetch progress updates
 app.get("/progress-updates", (req, res) => {
-    // Send the current progress data
     res.json(progressData);
 });
 
 app.get("/file-link", (req, res) => {
     if (fileInfoData) {
         res.json({ fileInfo: fileInfoData });
+    } else {
+        res.status(404).send("File not found");
     }
 });
 
 app.get("/download-csv", async (req, res) => {
     if (fileInfoData) {
         try {
-            // Set up options for downloading the file
             const options = {
                 destination: fileInfoData.filename
             };
 
-            // Download the file from Google Cloud Storage to local
             await storage.bucket('foreclosurefinderbackend').file(fileInfoData.filename).download(options);
 
-            // Construct the absolute path to the downloaded file
-            const absolutePath = path.resolve(__dirname, '..', fileInfoData.filename);
-
-            // Set the Content-Disposition header
             res.setHeader('Content-Disposition', `attachment; filename="${fileInfoData.filename}"`);
 
-            // Stream the file to the response
-            const fileStream = fs.createReadStream(absolutePath);
+            const fileStream = storage.bucket('foreclosurefinderbackend').file(fileInfoData.filename).createReadStream();
             fileStream.pipe(res);
 
-            // When the stream ends, delete the file
-            // fileStream.on('end', () => {
-            //     fs.unlink(absolutePath, (unlinkErr) => {
-            //         if (unlinkErr) {
-            //             console.error("Error deleting file:", unlinkErr);
-            //         } else {
-            //             console.log("File deleted successfully");
-            //         }
-            //     });
-            // });
-
-            // Return to avoid sending the response again
             return;
         } catch (error) {
             console.error("Error downloading file:", error);
-            return res.status(500).send("Internal Server Error");
+            res.status(500).send("Internal Server Error");
         }
     } else {
-        return res.status(404).send("File not found");
+        res.status(404).send("File not found");
     }
 });
 
+async function callPythonFunction(query) {
+    try {
+        // Replace 'your-cloud-function-url' with the actual URL of your deployed Google Cloud Function
+        const response = await axios.post('https://us-central1-foreclosurefinderbackend.cloudfunctions.net/fetch_data', query);
+        
+        if (response.status === 200) {
+            const responseData = response.data;
+            updateProgress(responseData);
+            return responseData;
+        } else {
+            console.error(`Error calling Python function: ${response.status} - ${response.statusText}`);
+            return null;
+        }
+    } catch (error) {
+        console.error("Error calling Python function:", error.message);
+        return null;
+    }
+}
+
+function updateProgress(data) {
+    const lines = data.toString().split("\n");
+    lines.forEach((line) => {
+        try {
+            console.log("Received line from Python:", line); // Log received lines
+            const progressMatch = line.match(/{"progress":([^}]*)}/);
+            if (progressMatch && progressMatch[1] !== null) {
+                progressData = { progress: progressMatch[1] };
+            }
+            const fileInfoMatch = line.match(/{"\s*type\s*":\s*"fileInfo"\s*,\s*"fileName"\s*:\s*"([^"]*)"\s*,\s*"fileUrl"\s*:\s*"([^"]*)"\s*}/);
+            if (fileInfoMatch && fileInfoMatch[1] !== null) {
+                const filename = fileInfoMatch[1];
+                const fileUrl = fileInfoMatch[2];
+                fileInfoData = { filename, fileUrl };
+            }
+        } catch (error) {
+            console.error("Error parsing data:", error);
+        }
+    });
+}
 
 app.use((req, res) => {
     return res.status(404).send("Not Found");
 });
 
-const server = app.listen(port, () => {
-    console.log(`HTTP Server is listening on ${host}:${port}`);
+const server = app.listen(8080, () => {
+    console.log(`HTTP Server is listening on localhost:8080`);
 });
 
-module.exports = server; // Export server for testing
+module.exports = server; 
