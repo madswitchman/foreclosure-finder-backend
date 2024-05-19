@@ -68,6 +68,7 @@
                     .then(response => response.json())
                     .then(data => {
                         if (data.progress !== undefined) {
+                            console.log("progress.ejs data.progress: " + data.progress)
                             updateProgress(data.progress);
                             if (data.progress == 100){
                                 //clear to stop fetch after completion

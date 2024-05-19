@@ -1,5 +1,6 @@
 const axios = require('axios');
 const express = require("express");
+const cors = require('cors');
 const { Storage } = require('@google-cloud/storage');
 
 const app = express();
@@ -7,6 +8,9 @@ const storage = new Storage();
 
 let progressData = { progress: 0 };
 let fileInfoData = { filename: '', fileUrl: '' };
+
+// Enable CORS for all routes
+app.use(cors());
 
 app.set("view engine", "ejs");
 app.set("views", "app/views");
@@ -25,7 +29,27 @@ app.get("/progress-updates", (req, res) => {
     res.json(progressData);
 });
 
+app.post('/progress-updates', (req, res) => {
+    const progress = req.body.progress;
+    console.log('Received progress update:', progress);
+
+    // Update frontend with progress information
+    // This could involve emitting a WebSocket event, updating a database, or sending an SSE response
+    res.json(progressData);
+});
+
 app.get("/file-link", (req, res) => {
+    if (fileInfoData) {
+        res.json({ fileInfo: fileInfoData });
+    } else {
+        res.status(404).send("File not found");
+    }
+});
+
+app.post('/file-link', (req, res) => {
+    const fileInfo = req.body;
+    console.log('Received file information:', fileInfo);
+
     if (fileInfoData) {
         res.json({ fileInfo: fileInfoData });
     } else {
@@ -80,16 +104,19 @@ function updateProgress(data) {
     const lines = data.toString().split("\n");
     lines.forEach((line) => {
         try {
-            console.log("Received line from Python:", line); // Log received lines
+            console.log("Reached updateProgess"); // Log received lines
             const progressMatch = line.match(/{"progress":([^}]*)}/);
             if (progressMatch && progressMatch[1] !== null) {
                 progressData = { progress: progressMatch[1] };
+                console.log("Received progressData from Python: ", progressData); // Log received lines
             }
             const fileInfoMatch = line.match(/{"\s*type\s*":\s*"fileInfo"\s*,\s*"fileName"\s*:\s*"([^"]*)"\s*,\s*"fileUrl"\s*:\s*"([^"]*)"\s*}/);
             if (fileInfoMatch && fileInfoMatch[1] !== null) {
                 const filename = fileInfoMatch[1];
                 const fileUrl = fileInfoMatch[2];
                 fileInfoData = { filename, fileUrl };
+                console.log("Received fileInfoData from Python: ", filename); // Log received lines
+                console.log("Received fileInfoData from Python: ", fileUrl); // Log received lines
             }
         } catch (error) {
             console.error("Error parsing data:", error);
