@@ -11,30 +11,30 @@ COPY package*.json ./
 RUN npm install
 
 # Second stage: Install Python and dependencies
-FROM python:3.8.2-slim AS python_build
+#FROM python:3.8.2-slim AS python_build
 
 # Install PyInstaller
-RUN pip install pyinstaller
+#RUN pip install pyinstaller
 
 # Set the working directory for Python application
-WORKDIR /app/scripts
+#WORKDIR /app/scripts
 
 # Copy the Python script and requirements.txt
-COPY app/scripts/api_request.py /app/scripts/
-COPY app/scripts/requirements.txt /app/scripts/
+#COPY app/scripts/api_request.py /app/scripts/
+#COPY app/scripts/requirements.txt /app/scripts/
 
 # Install necessary build tools including GCC
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    gcc \
-    libffi-dev \
-    && rm -rf /var/lib/apt/lists/*
+# RUN apt-get update && apt-get install -y \
+#     build-essential \
+#     gcc \
+#     libffi-dev \
+#     && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+#RUN pip install --no-cache-dir -r requirements.txt
 
 # Third stage: Package Python application using PyInstaller
-RUN pyinstaller --onefile /app/scripts/api_request.py
+#RUN pyinstaller --onefile /app/scripts/api_request.py
 
 # Final stage
 FROM node_build AS final
@@ -43,7 +43,7 @@ FROM node_build AS final
 WORKDIR /app
 
 # Copy the packaged Python executable into the final image
-COPY --from=python_build /app/scripts/dist/api_request /app/scripts/dist/api_request
+#COPY --from=python_build /app/scripts/dist/api_request /app/scripts/dist/api_request
 
 # Copy the Node.js application files
 COPY app/ app/
