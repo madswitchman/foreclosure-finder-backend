@@ -43,6 +43,7 @@ app.get("/run-script", (req, res) => {
             const lines = data.toString().split("\n");
             lines.forEach((line) => {
                 try {
+                    console.log("Received line from Python:", line); // Log received lines
                     const progressMatch = line.match(/{"progress":([^}]*)}/);
                     if (progressMatch && progressMatch[1] !== null) {
                         progressData = { progress: progressMatch[1] };

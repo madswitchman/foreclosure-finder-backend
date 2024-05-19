@@ -5,6 +5,7 @@ import csv
 import os
 import sys
 import requests
+import logging
 from google.cloud import storage
 from google.cloud import firestore
 from google.oauth2 import service_account
@@ -35,10 +36,13 @@ def load_service_account_key():
             'serviceAccountKey.json')
 
 
+logging.basicConfig(level=logging.INFO)
+
 current_datetime = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
 
 post_data = sys.stdin.read()
-print("post_data:", post_data)
+# print("post_data:", post_data)
+logging.info(f"post_data: {post_data}")
 request_data = json.loads(post_data)
 
 db = firestore.Client(credentials=load_service_account_key())
@@ -106,7 +110,8 @@ try:
 
         primary_response = requests.get(
             PRIMARY_BASE_URL, params=search_params, timeout=10)
-        print("Request URL: ", primary_response.request.url)
+        # print("Request URL: ", primary_response.request.url)
+        logging.info(f"Request URL: {primary_response.request.url}")
 
         if primary_response.status_code == 200:
             primary_data = primary_response.json()
@@ -199,8 +204,10 @@ try:
                 break
 
         else:
-            print("Failed to fetch data from the primary API. Status code:",
-                  primary_response.status_code)
+            # print("Failed to fetch data from the primary API. Status code:",
+            #       primary_response.status_code)
+            logging.info(
+                f"Failed to fetch data from the primary API. Status code: {primary_response.status_code}")
             sys.exit(1)
 
     csv_contents = csv_data.getvalue()
@@ -213,4 +220,5 @@ try:
     send_file_info(csv_filename, blob.public_url)
 
 except Exception as e:
-    print("Error:", e)
+    # print("Error:", e)
+    logging.info(f"Error: {e}")
