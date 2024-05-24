@@ -88,10 +88,24 @@ app.get("/download-csv", async (req, res) => {
     }
 });
 
+app.get('/test-connection', async (req, res) => {
+    try {
+      const response = await axios.get('https://us-central1-foreclosurefinderbackend.cloudfunctions.net/fetch_data');
+      res.send(response.data);
+    } catch (error) {
+      console.error('Error connecting to Cloud Function:', error.response ? error.response.data : error.message);
+      res.status(500).send('Error connecting to Cloud Function');
+    }
+  });
+
 async function callPythonFunction(query) {
     try {
-        // Replace 'your-cloud-function-url' with the actual URL of your deployed Google Cloud Function
-        const response = await axios.post('https://us-central1-foreclosurefinderbackend.cloudfunctions.net/fetch_data', query);
+        // Call Cloud Function
+        const response = await axios.post(
+            'https://us-central1-foreclosurefinderbackend.cloudfunctions.net/fetch_data',
+            req.body, // Adjust this payload as necessary
+            { headers: { 'Content-Type': 'application/json' } }
+          );
         
         if (response.status === 200) {
             const responseData = response.data;
