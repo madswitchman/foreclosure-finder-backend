@@ -90,8 +90,11 @@ app.get("/download-csv", async (req, res) => {
 
 app.get('/test-connection', async (req, res) => {
     try {
-      const response = await axios.get('https://us-central1-foreclosurefinderbackend.cloudfunctions.net/fetch_data');
-      res.send(response.data);
+        const response = await axios.get(
+            'https://us-central1-foreclosurefinderbackend.cloudfunctions.net/fetch_data',
+            { headers: { 'Content-Type': 'application/json' } }
+          );
+          res.send(response.data);
     } catch (error) {
       console.error('Error connecting to Cloud Function:', error.response ? error.response.data : error.message);
       res.status(500).send('Error connecting to Cloud Function');
