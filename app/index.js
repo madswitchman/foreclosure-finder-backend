@@ -1,6 +1,7 @@
 const axios = require('axios');
 const express = require("express");
 const cors = require('cors');
+const bodyParser = require('body-parser')
 const { Storage } = require('@google-cloud/storage');
 
 const app = express();
@@ -11,6 +12,8 @@ let fileInfoData = { filename: '', fileUrl: '' };
 
 // Enable CORS for all routes
 app.use(cors());
+
+app.use(bodyParser.json())
 
 app.set("view engine", "ejs");
 app.set("views", "app/views");
@@ -30,12 +33,14 @@ app.get("/progress-updates", (req, res) => {
 });
 
 app.post('/progress-updates', (req, res) => {
-    const progress = req.body.progress;
-    console.log('Received progress update:', progress);
-
-    // Update frontend with progress information
-    // This could involve emitting a WebSocket event, updating a database, or sending an SSE response
-    res.json(progressData);
+    try {
+        const progress = req.body.progress;
+        console.log('Received progress update:', progress);
+        res.json({ progress });
+    } catch (error) {
+        console.error('Error handling progress update:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
 });
 
 app.get("/file-link", (req, res) => {
