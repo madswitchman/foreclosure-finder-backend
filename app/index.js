@@ -92,6 +92,7 @@ app.get('/test-connection', async (req, res) => {
     try {
         const response = await axios.get(
             'https://us-central1-foreclosurefinderbackend.cloudfunctions.net/fetch_data',
+            req.query.state,
             { headers: { 'Content-Type': 'application/json' } }
           );
           res.send(response.data);
@@ -106,7 +107,7 @@ async function callPythonFunction(query) {
         // Call Cloud Function
         const response = await axios.post(
             'https://us-central1-foreclosurefinderbackend.cloudfunctions.net/fetch_data',
-            query, // Adjust this payload as necessary
+            query, 
             { headers: { 'Content-Type': 'application/json' } }
           );
         
