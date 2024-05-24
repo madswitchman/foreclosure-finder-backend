@@ -91,7 +91,7 @@ app.get("/download-csv", async (req, res) => {
 async function callPythonFunction(query) {
     try {
         // Replace 'your-cloud-function-url' with the actual URL of your deployed Google Cloud Function
-        const response = await axios.post('https://foreclosure-finder-backend-lv672goida-uc.a.run.app/fetch_data', query);
+        const response = await axios.post('https://foreclosure-finder-backend-lv672goida-uc.a.run.app/run_script', query);
         
         if (response.status === 200) {
             const responseData = response.data;
