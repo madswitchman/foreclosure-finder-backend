@@ -34,9 +34,11 @@ app.get("/progress-updates", (req, res) => {
 
 app.post('/progress-updates', (req, res) => {
     try {
-        const progress = req.body.progress;
-        console.log('Received progress update:', progress);
-        res.json({ progress });
+        //const progress = req.body.progress;
+        progressData.progress = req.body.progress;
+        console.log('Received progress update:', progressData.progress);
+        //res.json({ progress });
+        res.json({ progress: progressData.progress });
     } catch (error) {
         console.error('Error handling progress update:', error);
         res.status(500).json({ error: 'Internal Server Error' });

@@ -62,14 +62,16 @@
         }
 
         // Function to fetch progress updates from the server
-        function fetchProgressUpdates(state) {
+        function fetchProgressUpdates() {
             progressInterval = setInterval(() => {
-                fetch(`/progress-updates?state=${state}`)
+                fetch(`/progress-updates`)
                     .then(response => response.json())
                     .then(data => {
                         if (data.progress !== undefined) {
                             console.log("progress.ejs data.progress: " + data.progress)
                             updateProgress(data.progress);
+                            
+                            //stop once complete
                             if (data.progress == 100){
                                 //clear to stop fetch after completion
                                 clearInterval(progressInterval);  
