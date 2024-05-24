@@ -39,15 +39,36 @@ const transformQueryToJSON = (query) => {
 //     }
 // });
 
+// app.get("/run-script", async (req, res) => {
+//     try {
+//         console.log('Received request at /run-script with query:', req.query);
+//         res.render("progress");
+//         const transformedQuery = transformQueryToJSON(req.query);
+//         console.log('Transformed query to JSON:', transformedQuery);
+//         await callPythonFunction(transformedQuery);
+//     } catch (error) {
+//         console.error("Error calling Python function:", error.message);
+//         res.status(500).send("Internal Server Error");
+//     }
+// });
+
 app.get("/run-script", async (req, res) => {
     try {
         console.log('Received request at /run-script with query:', req.query);
         res.render("progress");
         const transformedQuery = transformQueryToJSON(req.query);
         console.log('Transformed query to JSON:', transformedQuery);
-        await callPythonFunction(transformedQuery);
+
+        // Call the function asynchronously
+        callPythonFunction(transformedQuery)
+            .then(result => {
+                console.log('Python function executed successfully:', result);
+            })
+            .catch(error => {
+                console.error("Error calling Python function:", error.message);
+            });
     } catch (error) {
-        console.error("Error calling Python function:", error.message);
+        console.error("Error in /run-script handler:", error.message);
         res.status(500).send("Internal Server Error");
     }
 });
@@ -126,12 +147,27 @@ app.get("/download-csv", async (req, res) => {
 //     }
 // });
 
+// app.post('/test-connection', async (req, res) => {
+//     try {
+//         const response = await axios.post(
+//         'https://us-central1-foreclosurefinderbackend.cloudfunctions.net/fetch_data',
+//         req.body,
+//         { headers: { 'Content-Type': 'application/json' } }
+//         );
+//         res.status(response.status).send(response.data);
+//     } catch (error) {
+//         console.error('Error invoking Cloud Function:', error.response ? error.response.data : error.message);
+//         res.status(500).send('Error invoking Cloud Function');
+//     }
+// });
+
 app.post('/test-connection', async (req, res) => {
     try {
+        console.log('Received request at /test-connection with body:', req.body);
         const response = await axios.post(
-        'https://us-central1-foreclosurefinderbackend.cloudfunctions.net/fetch_data',
-        req.body,
-        { headers: { 'Content-Type': 'application/json' } }
+            'https://us-central1-foreclosurefinderbackend.cloudfunctions.net/fetch_data',
+            req.body,
+            { headers: { 'Content-Type': 'application/json' } }
         );
         res.status(response.status).send(response.data);
     } catch (error) {
