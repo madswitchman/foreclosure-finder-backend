@@ -100,7 +100,21 @@ app.get('/test-connection', async (req, res) => {
       console.error('Error connecting to Cloud Function:', error.response ? error.response.data : error.message);
       res.status(500).send('Error connecting to Cloud Function');
     }
-  });
+});
+
+app.post('/test-connection', async (req, res) => {
+    try {
+        const response = await axios.post(
+        'https://us-central1-foreclosurefinderbackend.cloudfunctions.net/fetch_data',
+        req.body,
+        { headers: { 'Content-Type': 'application/json' } }
+        );
+        res.status(response.status).send(response.data);
+    } catch (error) {
+        console.error('Error invoking Cloud Function:', error.response ? error.response.data : error.message);
+        res.status(500).send('Error invoking Cloud Function');
+    }
+});
 
 async function callPythonFunction(query) {
     try {
