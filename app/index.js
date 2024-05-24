@@ -10,8 +10,12 @@ const storage = new Storage();
 let progressData = { progress: 0 };
 let fileInfoData = { filename: '', fileUrl: '' };
 
-// Enable CORS for all routes
-app.use(cors());
+// CORS configuration to handle preflight requests and allow all origins
+app.use(cors({
+    origin: '*',
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['Content-Type']
+}));
 
 app.use(bodyParser.json())
 
