@@ -103,7 +103,7 @@ async function callPythonFunction(query) {
         // Call Cloud Function
         const response = await axios.post(
             'https://us-central1-foreclosurefinderbackend.cloudfunctions.net/fetch_data',
-            req.body, // Adjust this payload as necessary
+            query, // Adjust this payload as necessary
             { headers: { 'Content-Type': 'application/json' } }
           );
         
