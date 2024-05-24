@@ -10,12 +10,8 @@ const storage = new Storage();
 let progressData = { progress: 0 };
 let fileInfoData = { filename: '', fileUrl: '' };
 
-// CORS configuration to handle preflight requests and allow all origins
-app.use(cors({
-    origin: '*',
-    methods: ['GET', 'POST', 'OPTIONS'],
-    allowedHeaders: ['Content-Type']
-}));
+// Enable CORS for all routes
+app.use(cors());
 
 app.use(bodyParser.json())
 
@@ -59,7 +55,7 @@ const transformQueryToJSON = (query) => {
 app.get("/run-script", async (req, res) => {
     try {
         console.log('Received request at /run-script with query:', req.query);
-        res.render("progress");
+        
         const transformedQuery = transformQueryToJSON(req.query);
         console.log('Transformed query to JSON:', transformedQuery);
 
@@ -71,6 +67,8 @@ app.get("/run-script", async (req, res) => {
             .catch(error => {
                 console.error("Error calling Python function:", error.message);
             });
+            
+        res.render("progress");
     } catch (error) {
         console.error("Error in /run-script handler:", error.message);
         res.status(500).send("Internal Server Error");
